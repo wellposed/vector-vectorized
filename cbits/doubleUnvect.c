@@ -21,14 +21,14 @@ because you really shouldn't do more than 4gb of work in one sequential ffi call
 
 /* CPP macro to generate declarations and body for strided scalar versions */
 
-#define BinaryOpScalarArray(name,type,op) void name(int length, type  * restrict  left, \
+#define BinaryOpScalarArray(name,type,binaryop) void name(int length, type  * restrict  left, \
 int leftStride ,type  * restrict  right,int rightStride, type * restrict  result, \
 int resultStride  ); \
  \
 void name(int length, double  * restrict  left,int leftStride ,double  * restrict  right,int rightStride, double * restrict  result, int resultStride  ){ \
     int ix = 0 ;  \
     for (ix = 0; ix < length ; ix ++){ \
-        result[ix* resultStride]= (left[ix*leftStride] ) + (right[ix*rightStride]  ) ; \
+        result[ix* resultStride]= (left[ix*leftStride] ) binaryop (right[ix*rightStride]  ) ; \
     } \
 }
 
