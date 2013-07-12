@@ -38,7 +38,7 @@ UnaryOpScalarArray(arrayGeneralReciprocal,reciprocal,type) \
 int leftStride ,type  * restrict  right,int rightStride, type * restrict  result, \
 int resultStride  ); \
  \
-void name##type(int length, double  * restrict  left,int leftStride ,double  * restrict  right,int rightStride, double * restrict  result, int resultStride  ){ \
+void name##type(int length, type  * restrict  left,int leftStride ,type  * restrict  right,int rightStride, type * restrict  result, int resultStride  ){ \
     int ix = 0 ;  \
     for (ix = 0; ix < length ; ix ++){ \
         result[ix* resultStride]= (left[ix*leftStride] ) binaryop (right[ix*rightStride]  ) ; \
@@ -46,9 +46,9 @@ void name##type(int length, double  * restrict  left,int leftStride ,double  * r
 }
 
 #define UnaryOpScalarArray(name,op,type) void name##type(int length, type * restrict in,int inStride,\
-double * restrict out, int outStride); \
+type * restrict out, int outStride); \
  \
-void name##type(int length, double * restrict in,int inStride, double * restrict out, \
+void name##type(int length, type * restrict in,int inStride, type * restrict out, \
 int outStride){ \
     int ix = 0 ; \
     for(ix = 0 ; ix < length ; ix ++){ \
@@ -89,3 +89,4 @@ also, will try to write things so that if any of the read (input) arrays
 
 
 mkNumFracOpsScalar(double) ; 
+mkNumFracOpsScalar(float) ; 
