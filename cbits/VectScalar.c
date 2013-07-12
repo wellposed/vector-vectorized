@@ -34,21 +34,28 @@ UnaryOpScalarArray(arrayGeneralAbs,fabs,type) \
 UnaryOpScalarArray(arrayGeneralReciprocal,reciprocal,type) \
 
 
-#define BinaryOpScalarArray(name,binaryop,type) void  name##_##type(int length, type  * restrict  left, \
-int leftStride ,type  * restrict  right,int rightStride, type * restrict  result, \
+#define BinaryOpScalarArray(name,binaryop,type) void  name##_##type(unsigned int length, type  *   left, \
+int leftStride ,type  *   right,int rightStride, type *   result, \
 int resultStride  ); \
  \
-void name##_##type(int length, type  * restrict  left,int leftStride ,type  * restrict  right,int rightStride, type * restrict  result, int resultStride  ){ \
+void name##_##type(unsigned int length, type  *   left,int leftStride ,type  *   right,int rightStride, type *   result, int resultStride  ){ \
     int ix = 0 ;  \
-    for (ix = 0; ix < length ; ix ++){ \
-        result[ix* resultStride]= (left[ix*leftStride] ) binaryop (right[ix*rightStride]  ) ; \
+    if( (leftStride == 1) && (rightStride == 1) && (resultStride ==1)){ \
+        for (ix = 0; ix < length ; ix ++){ \
+            result[ix* resultStride]= (left[ix*leftStride] ) binaryop (right[ix*rightStride]  ) ; \
+        } ;  \
+    }else \
+        if(1 <= length){  \
+        for (ix = 0; ix < length ; ix ++){ \
+            result[ix* resultStride]= (left[ix*leftStride] ) binaryop (right[ix*rightStride]  ) ; \
+        }  \
     } \
 }
 
-#define UnaryOpScalarArray(name,op,type) void name##_##type(int length, type * restrict in,int inStride,\
-type * restrict out, int outStride); \
+#define UnaryOpScalarArray(name,op,type) void name##_##type(unsigned int length, type *  in,int inStride,\
+type *  out, int outStride); \
  \
-void name##_##type(int length, type * restrict in,int inStride, type * restrict out, \
+void name##_##type(unsigned int length, type *  in,int inStride, type *  out, \
 int outStride){ \
     int ix = 0 ; \
     for(ix = 0 ; ix < length ; ix ++){ \
