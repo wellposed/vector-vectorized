@@ -1,6 +1,7 @@
 #include "simd.h"
 #include <tgmath.h>
 #include <complex.h>
+#include <stdint.h>
 
 /*
 we have 3 versions: 
@@ -34,34 +35,41 @@ UnaryOpScalarArray(arrayGeneralAbs,fabs,type) \
 UnaryOpScalarArray(arrayGeneralReciprocal,reciprocal,type) \
 
 
-#define BinaryOpScalarArray(name,binaryop,type) void  name##_##type(unsigned int length, type  *   left, \
-int leftStride ,type  *   right,int rightStride, type *   result, \
+#define BinaryOpScalarArray(name,binaryop,type) void  name##_##type(uint32_t length, type  *   left, \
+int32_t leftStride ,type  *   right,int32_t rightStride, type *   result, \
 int resultStride  ); \
  \
-void name##_##type(unsigned int length, type  *   left,int leftStride ,type  *   right,int rightStride, type *   result, int resultStride  ){ \
+void name##_##type(uint32_t length, type  *   left,int32_t leftStride ,type  *   right,int32_t rightStride, type *   result, int32_t resultStride  ){ \
     int ix = 0 ;  \
-    if( (leftStride == 1) && (rightStride == 1) && (resultStride ==1)){ \
-        for (ix = 0; ix < length ; ix ++){ \
-            result[ix* resultStride]= (left[ix*leftStride] ) binaryop (right[ix*rightStride]  ) ; \
-        } ;  \
-    }else \
-        if(1 <= length){  \
-        for (ix = 0; ix < length ; ix ++){ \
-            result[ix* resultStride]= (left[ix*leftStride] ) binaryop (right[ix*rightStride]  ) ; \
+    for (ix = 0; ix < length ; ix ++){ \
+        result[ix* resultStride]= (left[ix*leftStride] ) binaryop (right[ix*rightStride]  ) ; \
         }  \
-    } \
 }
 
-#define UnaryOpScalarArray(name,op,type) void name##_##type(unsigned int length, type *  in,int inStride,\
-type *  out, int outStride); \
+#define UnaryOpScalarArray(name,op,type) void name##_##type(uint32_t length, type *  in,int32_t inStride,\
+type *  out, int32_t outStride); \
  \
-void name##_##type(unsigned int length, type *  in,int inStride, type *  out, \
-int outStride){ \
+void name##_##type(uint32_t length, type *  in,int32_t inStride, type *  out, \
+int32_t outStride){ \
     int ix = 0 ; \
     for(ix = 0 ; ix < length ; ix ++){ \
         out[ix*outStride] = op(in[ix*inStride]); \
     } \
 }
+
+#define DotProductScalarArray(name,binaryop, type,init) type name##_##type(uint32_t length, type  *   left, \
+int32_t leftStride ,type  *   right,int32_t rightStride); \
+ \
+ type name##_##type(uint32_t length, type  *   left, int32_t leftStride ,type  *   right,int32_t rightStride){ \
+    type res = init ; \
+    uint32_t ix = 0; \
+    for(ix=0 ; ix < length ; ix++ ){ \
+        res +=  binaryop((left[ix*leftStride] ),(right[ix*rightStride]  )) ; \
+        } \
+    return res ; \
+    }
+
+
 
 ////////////
 /// Scalar versions
@@ -79,10 +87,17 @@ do a typedef for the complex types so that writing the macro stuff
 mixes well
 */
 
+#define realtimes(x,y) (x * y ) 
+
+#define complextimes(x,y)  (x * conj(y))
+
 typedef float complex complex_float ;
 typedef double complex complex_double ;
 
-
+DotProductScalarArray(arrayGeneralDotProduct,realtimes,double,0.0) ;
+DotProductScalarArray(arrayGeneralDotProduct,realtimes,float,0.0) ;
+DotProductScalarArray(arrayGeneralDotProduct,complextimes,complex_double,0.0 + I*0.0) ;
+DotProductScalarArray(arrayGeneralDotProduct,complextimes,complex_float,0.0 + I*0.0) ;
 
 mkNumFracOpsScalar(complex_double);
 mkNumFracOpsScalar(complex_float);
