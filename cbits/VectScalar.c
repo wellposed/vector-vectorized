@@ -31,8 +31,120 @@ BinaryOpScalarArray(arrayGeneralMinus,-,type) \
 BinaryOpScalarArray(arrayGeneralTimes,*,type) \
 BinaryOpScalarArray(arrayGeneralDivide,/,type) \
 UnaryOpScalarArray(arrayGeneralNegate,negate,type) \
-UnaryOpScalarArray(arrayGeneralAbs,fabs,type) \
+
 UnaryOpScalarArray(arrayGeneralReciprocal,reciprocal,type) \
+ \ 
+UnaryOpScalarArray(arrayGeneralSqrt,sqrt,type) 
+// UnaryOpScalarArray(arrayGeneralLog)
+// UnaryOpScalarArray(arrayGeneralAbs,fabs,type) \ // this is wrong for complex numbers
+
+/*
+
+
+
+double               carg(double complex);
+
+double               cimag(double complex);
+
+
+
+
+double               creal(double complex);
+
+double complex       cacos(double complex);
+
+double complex       cacosh(double complex);
+
+
+double complex       casin(double complex);
+
+double complex       casinh(double complex);
+
+
+double complex       catan(double complex);
+
+double complex       catanh(double complex);
+
+
+double complex       ccos(double complex);
+
+double complex       ccosh(double complex);
+
+double complex       cexp(double complex);
+
+double complex       clog(double complex);
+
+double complex       conj(double complex);
+
+double complex       cpow(double complex, double complex);
+
+double complex       cproj(double complex);
+
+double complex       csin(double complex);
+
+double complex       csinh(double complex);
+
+double complex       csqrt(double complex);
+
+double complex       ctan(double complex);
+
+double complex       ctanh(double complex);
+
+*/
+
+/*
+
+
+
+atan2()
+cbrt()
+ceil()
+copysign()
+erf()
+erfc()
+exp2()
+expm1()
+fdim()
+floor()
+ 
+
+
+fma()
+fmax()
+fmin()
+fmod()
+frexp()
+hypot()
+ilogb()
+ldexp()
+lgamma()
+llrint()
+ 
+
+
+llround()
+log10()
+log1p()
+log2()
+logb()
+lrint()
+lround()
+nearbyint()
+nextafter()
+nexttoward()
+ 
+
+
+remainder()
+remquo()
+rint()
+round()
+scalbn()
+scalbln()
+tgamma()
+trunc()
+ */
+
 
 
 #define BinaryOpScalarArray(name,binaryop,type) void  name##_##type(uint32_t length, type  *   left, \
