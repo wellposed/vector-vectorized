@@ -18,6 +18,9 @@ plus scalar fallback
 note, for now using 32bit int types for array operation sizes and strides 
 because you really shouldn't do more than 4gb of work in one sequential ffi call!
 
+
+
+
 */
 
 /* CPP macro to generate declarations and body for strided scalar versions */
@@ -210,6 +213,9 @@ DotProductScalarArray(arrayGeneralDotProduct,realtimes,double,0.0) ;
 DotProductScalarArray(arrayGeneralDotProduct,realtimes,float,0.0) ;
 DotProductScalarArray(arrayGeneralDotProduct,complextimes,complex_double,0.0 + I*0.0) ;
 DotProductScalarArray(arrayGeneralDotProduct,complextimes,complex_float,0.0 + I*0.0) ;
+
+UnaryOpScalarArray(arrayGeneralAbs,fabs,float);
+UnaryOpScalarArray(arrayGeneralAbs,fabs,double);
 
 mkNumFracOpsScalar(complex_double);
 mkNumFracOpsScalar(complex_float);
