@@ -79,7 +79,7 @@ double complex       clog(double complex);
 
 double complex       conj(double complex);
 
-double complex       cpow(double complex, double complex);
+
 
 double complex       cproj(double complex);
 
@@ -93,6 +93,8 @@ double complex       ctan(double complex);
 
 double complex       ctanh(double complex);
 
+
+double complex       cpow(double complex, double complex);
 */
 
 /*
