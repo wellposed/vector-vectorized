@@ -17,17 +17,18 @@ main :: IO ()
 #if x86_64_HOST_ARCH
 main = 
     do 
-        putStrLn "warning: clang must be installed for build to succeed correctly"
+        putStrLn "Please have Clang installed or the build will fail"
         defaultMainWithHooks myhook 
 #else   
 main = error "only x86_64 architectures are currently supported" 
 #endif 
 
+
 {-
-NOTE: 
-
+this is to work around mac having a really old GCC version and AS (assembler)
+darwin is OSX
 -}
-
+#if darwin_HOST_OS 
 myhook =  set lensBuildHook2UserHooks myBuildHook simpleUserHooks 
     where 
         oldbuildhook = get lensBuildHook2UserHooks simpleUserHooks
@@ -41,11 +42,12 @@ myhook =  set lensBuildHook2UserHooks myBuildHook simpleUserHooks
                         newOverrideArgs = oldOverrideArgs++["-pgma clang", "-pgmc clang"] 
                         newGhcConf = set lensProgramOverrideArgs2ConfiguredProgram newOverrideArgs oldGhcConf
                         newProgramConfig = updateProgram newGhcConf oldProgramConfig
-
-
-            {-basically mangle adding -pgma and pgmc to the flags for the ghc withprograms in local build info
-            local build info -> with program -}
-
+#else
+myhook = simpleUserHooks
+#endif 
+{-
+    On mac we need to use Clang as the assembler and C compiler to enable
+-}
 
 
     --simpleUserHooks { hookedPrograms = [ghcProgram { programPostConf = \ a b -> return ["-pgma clang", "-pgmc clang"] }] }
