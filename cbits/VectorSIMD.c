@@ -145,32 +145,32 @@ void  name##_##SIMD##_##float(uint32_t length, float  *   left,float  *   right,
 #endif \
 }
 
-fine UnaryOpSimdDoubleArray(name,unaryop) void  name##_##SIMD##_##double(uint32_t length, double   *   in,double *   result); \
+fine UnaryOpSimdArray(name,unaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3) void  name##_##SIMD##_##type(uint32_t length, type   *   in,type *   result); \
  \
-void  name##_##SIMD##_##double(uint32_t length, double  *   in, double *   result){ \
+void  name##_##SIMD##_##type(uint32_t length, type  *   in, type *   result){ \
 #ifdef    __AVX__      \
     int ix = 0 ;  \
-    for (ix = 0; ix < length ; ix+= 4){ \
-        __m256d inV = _mm256_load_pd(in + ix); \
-        __m256d resV =   unaryop(in) ; \ 
-        _mm256_store_pd(result+ix , resV); \
+    for (ix = 0; ix < length ; ix+= sizeAVX){ \
+        simdtypeAVX inV = simdloadAVX(in + ix); \
+        simdtypeAVX resV =   unaryop(in) ; \ 
+        simdstoreAVX(result+ix , resV); \
         }  \
 #elif defined(__SSE3__)   \
   //  for pre sandybridge \
     int ix = 0 ;  \
-    for (ix = 0; ix < length ; ix+=4){ \
-        __m128d inV1 = _mm128_load_pd(in + ix); \
-        __m128d resV1 = unaryop(inV1) ; \ 
-        _mm128_store_pd(result+ix , resV1); \
-        __m128d inV2 = _mm128_load_pd(in + ix+2); \
-        __m128d resV2 =  unaryop(inV2) ; \ 
-        _mm128_store_pd(result+ix+2 , resV2); \
+    for (ix = 0; ix < length ; ix+=sizeAVX){ \
+        simdtypeSSE3 inV1 = simdloadSSE3(in + ix); \
+        simdtypeSSE3 resV1 = unaryop(inV1) ; \ 
+        simdstoreSSE3(result+ix , resV1); \
+        simdtypeSSE3 inV2 = simdloadSSE3(in + ix+sizeSSE3); \
+        simdtypeSSE3 resV2 =  unaryop(inV2) ; \ 
+        simdstoreSSE3(result+ix+2 , resV2); \
         }  \
 #else  \
     //  scalar, sorry :) , for Old old intel x86, and for other architectures \ 
     int ix = 0 ; \
     for(ix = 0 ; ix < length ; ix ++){ \
-        result[ix] =(left[ix] ) binaryop (right[ix]  ) ;  \
+        result[ix] = unaryop(in[ix]) ;  \
     } \
 #endif \
 }
