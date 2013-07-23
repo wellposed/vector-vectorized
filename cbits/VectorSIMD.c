@@ -50,27 +50,100 @@ dot product will be a loop
 where i load, do pair wise, NB, worth using FMA  YMM ops when available
 
 */
+
 /*
 i'm writing it as 32byte aligned, need to know how many elements
 are in a 16byte and 32byte 
 
+__AVX__ , __SSE3__ and __FMA__ are the main ways for code, at least for now,
+I will try to have the code perform favorably on both haswell and sandy-bridge 
+micro architectures
+
+basically every cycle I can try to have an independent 
+vector mult/blend/fma, vector add/shuffle/fma, shuffle/blend,   load/storeaddress ,load/storeaddress 
+
+(I *should* unroll my vectorized loops to exploit that, but for now I wont)
+
+ elem32 =  2* elem16
+
+
+__m256d means v4df (double precsion 64bit floats)
+__m256  means v8sf (single precision 32 bit floats)
+
+_mm256_load_pd
+_mm256_store_pd for the avx versions
 
 */
 
-#define BinaryOpSimdArray(name,binaryop,type,elem16,elem32) void  name##_##SIMD##_##type(uint32_t length, type  *   left, \
-    type  *   right,int32_t rightStride, type *   result); \
+#define BinaryOpSimdDoubleArray(name,binaryop) void  name##_##SIMD##_##double(uint32_t length, double  *   left, \
+    double   *   right,double *   result); \
  \
-void  name##_##SIMD##_##type(uint32_t length, type  *   left,type  *   right, type *   result){ \
+void  name##_##SIMD##_##double(uint32_t length, double  *   left,double  *   right, double *   result){ \
+#ifdef    __AVX__      \
     int ix = 0 ;  \
-    for (ix = 0; ix < length ; ix+=elem32){ \
-#ifdef         
-        result[ix* resultStride]= (left[ix*leftStride] ) binaryop (right[ix*rightStride]  ) ; \
+    for (ix = 0; ix < length ; ix+= 4){ \
+        __m256d leftV = _mm256_load_pd(left + ix); \
+        __m256d rightV = _mm256_load_pd(right+ix ) ; \
+        __m256d resV =  leftV binaryop rightV ; \ 
+        _mm256_store_pd(result+ix , resV); \
         }  \
+#elif defined(__SSE3__)   \
+  //  for pre sandybridge \
+    int ix = 0 ;  \
+    for (ix = 0; ix < length ; ix+=4){ \
+        __m128d leftV1 = _mm128_load_pd(left + ix); \
+        __m128d rightV1 =_mm128_load_pd(right+ix ) ; \
+        __m128d resV1 =  leftV1 binaryop rightV1 ; \ 
+        _mm128_store_pd(result+ix , resV1); \
+        __m128d leftV2 = _mm128_load_pd(left + ix+2); \
+        __m128d rightV2 =_mm128_load_pd(right+ix+2 ) ; \
+        __m128d resV2 =  leftV2 binaryop rightV2 ; \ 
+        _mm128_store_pd(result+ix+2 , resV2); \
+        }  \
+#else  \
+    //  scalar, sorry :) , for Old old intel x86, and for other architectures \ 
+    int ix = 0 ; \
+    for(ix = 0 ; ix < length ; ix ++){ \
+        out[ix] =(left[ix] ) binaryop (right[ix]  ) ;  \
+    } \
+#endif \
 }
 
 
 
-
+#define BinaryOpSimdFloatArray(name,binaryop) void  name##_##SIMD##_##float(uint32_t length, float  *   left, \
+    float   *   right,float *   result); \
+ \
+void  name##_##SIMD##_##float(uint32_t length, float  *   left,float  *   right, float *   result){ \
+#ifdef    __AVX__      \
+    int ix = 0 ;  \
+    for (ix = 0; ix < length ; ix+= 4){ \
+        __m256d leftV = _mm256_load_pd(left + ix); \
+        __m256d rightV = _mm256_load_pd(right+ix ) ; \
+        __m256d resV =  leftV binaryop rightV ; \ 
+        _mm256_store_pd(result+ix , resV); \
+        }  \
+#elif defined(__SSE3__)   \
+  //  for pre sandybridge \
+    int ix = 0 ;  \
+    for (ix = 0; ix < length ; ix+=4){ \
+        __m128d leftV1 = _mm128_load_ps(left + ix); \
+        __m128d rightV1 =_mm128_load_ps(right+ix ) ; \
+        __m128d resV1 =  leftV1 binaryop rightV1 ; \ 
+        _mm128_store_pd(result+ix , resV1); \
+        __m128 leftV2 = _mm128_load_ps(left + ix+2); \
+        __m128 rightV2 =_mm128_load_ps(right+ix+2 ) ; \
+        __m128 resV2 =  leftV2 binaryop rightV2 ; \ 
+        _mm128_store_pd(result+ix+2 , resV2); \
+        }  \
+#else  \
+    //  scalar, sorry :) , for Old old intel x86, and for other architectures \ 
+    int ix = 0 ; \
+    for(ix = 0 ; ix < length ; ix ++){ \
+        out[ix] =(left[ix] ) binaryop (right[ix]  ) ;  \
+    } \
+#endif \
+}
 
 
 
