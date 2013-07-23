@@ -104,7 +104,7 @@ void  name##_##SIMD##_##double(uint32_t length, double  *   left,double  *   rig
     //  scalar, sorry :) , for Old old intel x86, and for other architectures \ 
     int ix = 0 ; \
     for(ix = 0 ; ix < length ; ix ++){ \
-        out[ix] =(left[ix] ) binaryop (right[ix]  ) ;  \
+        restul[ix] =(left[ix] ) binaryop (right[ix]  ) ;  \
     } \
 #endif \
 }
@@ -117,7 +117,7 @@ void  name##_##SIMD##_##double(uint32_t length, double  *   left,double  *   rig
 void  name##_##SIMD##_##float(uint32_t length, float  *   left,float  *   right, float *   result){ \
 #ifdef    __AVX__      \
     int ix = 0 ;  \
-    for (ix = 0; ix < length ; ix+= 4){ \
+    for (ix = 0; ix < length ; ix+= 8){ \
         __m256d leftV = _mm256_load_pd(left + ix); \
         __m256d rightV = _mm256_load_pd(right+ix ) ; \
         __m256d resV =  leftV binaryop rightV ; \ 
@@ -126,24 +126,53 @@ void  name##_##SIMD##_##float(uint32_t length, float  *   left,float  *   right,
 #elif defined(__SSE3__)   \
   //  for pre sandybridge \
     int ix = 0 ;  \
-    for (ix = 0; ix < length ; ix+=4){ \
+    for (ix = 0; ix < length ; ix+=8){ \
         __m128d leftV1 = _mm128_load_ps(left + ix); \
         __m128d rightV1 =_mm128_load_ps(right+ix ) ; \
         __m128d resV1 =  leftV1 binaryop rightV1 ; \ 
         _mm128_store_pd(result+ix , resV1); \
-        __m128 leftV2 = _mm128_load_ps(left + ix+2); \
-        __m128 rightV2 =_mm128_load_ps(right+ix+2 ) ; \
+        __m128 leftV2 = _mm128_load_ps(left + ix+4); \
+        __m128 rightV2 =_mm128_load_ps(right+ix+4 ) ; \
         __m128 resV2 =  leftV2 binaryop rightV2 ; \ 
+        _mm128_store_pd(result+ix+4 , resV2); \
+        }  \
+#else  \
+    //  scalar, sorry :) , for Old old intel x86, and for other architectures \ 
+    int ix = 0 ; \
+    for(ix = 0 ; ix < length ; ix+){ \
+        result[ix] =(left[ix] ) binaryop (right[ix]  ) ;  \
+    } \
+#endif \
+}
+
+fine UnaryOpSimdDoubleArray(name,unaryop) void  name##_##SIMD##_##double(uint32_t length, double   *   in,double *   result); \
+ \
+void  name##_##SIMD##_##double(uint32_t length, double  *   in, double *   result){ \
+#ifdef    __AVX__      \
+    int ix = 0 ;  \
+    for (ix = 0; ix < length ; ix+= 4){ \
+        __m256d inV = _mm256_load_pd(in + ix); \
+        __m256d resV =   unaryop(in) ; \ 
+        _mm256_store_pd(result+ix , resV); \
+        }  \
+#elif defined(__SSE3__)   \
+  //  for pre sandybridge \
+    int ix = 0 ;  \
+    for (ix = 0; ix < length ; ix+=4){ \
+        __m128d inV1 = _mm128_load_pd(in + ix); \
+        __m128d resV1 = unaryop(inV1) ; \ 
+        _mm128_store_pd(result+ix , resV1); \
+        __m128d inV2 = _mm128_load_pd(in + ix+2); \
+        __m128d resV2 =  unaryop(inV2) ; \ 
         _mm128_store_pd(result+ix+2 , resV2); \
         }  \
 #else  \
     //  scalar, sorry :) , for Old old intel x86, and for other architectures \ 
     int ix = 0 ; \
     for(ix = 0 ; ix < length ; ix ++){ \
-        out[ix] =(left[ix] ) binaryop (right[ix]  ) ;  \
+        result[ix] =(left[ix] ) binaryop (right[ix]  ) ;  \
     } \
 #endif \
 }
-
 
 
