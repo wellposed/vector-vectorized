@@ -145,7 +145,7 @@ void  name##_##SIMD##_##float(uint32_t length, float  *   left,float  *   right,
 #endif \
 }
 
-fine UnaryOpSimdArray(name,unaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3) void  name##_##SIMD##_##type(uint32_t length, type   *   in,type *   result); \
+#define UnaryOpSimdArray(name,unaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3) void  name##_##SIMD##_##type(uint32_t length, type   *   in,type *   result); \
  \
 void  name##_##SIMD##_##type(uint32_t length, type  *   in, type *   result){ \
 #ifdef    __AVX__      \
