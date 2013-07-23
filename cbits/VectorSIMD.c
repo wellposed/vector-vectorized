@@ -175,4 +175,10 @@ void  name##_##SIMD##_##type(uint32_t length, type  *   in, type *   result){ \
 #endif \
 }
 
+/*
+note that 1 / v when v is a vector is casted to 1 being a replicated vector of 1s
+(in both clang and gcc, wooo)
+*/
+
+
 
