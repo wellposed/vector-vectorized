@@ -5,7 +5,7 @@
 #if __STDC_VERSION__ >= 199901L
   /* yay, C99 or newer!*/
 #else
-#warning "C99 or newer compliant compiler needed"
+#warning "C99 or newer C standard compliant compiler needed"
 #endif
 
 
