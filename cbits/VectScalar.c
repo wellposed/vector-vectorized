@@ -24,18 +24,7 @@ because you really shouldn't do more than 4gb of work in one sequential ffi call
 */
 
 /* CPP macro to generate declarations and body for strided scalar versions */
-#define negate(numexp)  (-(numexp))
-#define reciprocal(numexp) (1.0/(numexp))
 
-
-#define mkNumFracOpsScalar(type)  \
-BinaryOpScalarArray(arrayPlus,+,type) \
-BinaryOpScalarArray(arrayMinus,-,type) \
-BinaryOpScalarArray(arrayTimes,*,type) \
-BinaryOpScalarArray(arrayDivide,/,type) \
-UnaryOpScalarArray( arrayNegate,negate,type) \
-UnaryOpScalarArray( arrayReciprocal,reciprocal,type) \
-UnaryOpScalarArray( arraySqrt,sqrt,type) 
 // UnaryOpScalarArray(arrayGeneralLog)
 // UnaryOpScalarArray(arrayGeneralAbs,fabs,type) \ // this is wrong for complex numbers
 
@@ -155,7 +144,7 @@ int32_t leftStride ,type  *   right,int32_t rightStride, type *   result, \
 int resultStride  ); \
  \
 void name##_##type(uint32_t length, type  *   left,int32_t leftStride ,type  *   right,int32_t rightStride, type *   result, int32_t resultStride  ){ \
-    int ix = 0 ;  \
+    int32_t ix = 0 ;  \
     for (ix = 0; ix < length ; ix ++){ \
         result[ix* resultStride]= (left[ix*leftStride] ) binaryop (right[ix*rightStride]  ) ; \
         }  \
@@ -166,7 +155,7 @@ type *  out, int32_t outStride); \
  \
 void name##_##type(uint32_t length, type *  in,int32_t inStride, type *  out, \
 int32_t outStride){ \
-    int ix = 0 ; \
+    int32_t ix = 0 ; \
     for(ix = 0 ; ix < length ; ix ++){ \
         out[ix*outStride] = op(in[ix*inStride]); \
     } \
@@ -201,6 +190,21 @@ also, will try to write things so that if any of the read (input) arrays
 do a typedef for the complex types so that writing the macro stuff 
 mixes well
 */
+
+
+#define negate(numexp)  (-(numexp))
+#define reciprocal(numexp) (1.0/(numexp))
+
+
+#define mkNumFracOpsScalar(type)  \
+BinaryOpScalarArray(arrayPlus,+,type) \
+BinaryOpScalarArray(arrayMinus,-,type) \
+BinaryOpScalarArray(arrayTimes,*,type) \
+BinaryOpScalarArray(arrayDivide,/,type) \
+UnaryOpScalarArray( arrayNegate,negate,type) \
+UnaryOpScalarArray( arrayReciprocal,reciprocal,type) \
+UnaryOpScalarArray( arraySqrt,sqrt,type) 
+
 
 #define realtimes(x,y) (x * y ) 
 
