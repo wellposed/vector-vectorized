@@ -29,15 +29,13 @@ because you really shouldn't do more than 4gb of work in one sequential ffi call
 
 
 #define mkNumFracOpsScalar(type)  \
-BinaryOpScalarArray(arrayGeneralPlus,+,type) \
-BinaryOpScalarArray(arrayGeneralMinus,-,type) \
-BinaryOpScalarArray(arrayGeneralTimes,*,type) \
-BinaryOpScalarArray(arrayGeneralDivide,/,type) \
-UnaryOpScalarArray(arrayGeneralNegate,negate,type) \
-
-UnaryOpScalarArray(arrayGeneralReciprocal,reciprocal,type) \
- \ 
-UnaryOpScalarArray(arrayGeneralSqrt,sqrt,type) 
+BinaryOpScalarArray(arrayPlus,+,type) \
+BinaryOpScalarArray(arrayMinus,-,type) \
+BinaryOpScalarArray(arrayTimes,*,type) \
+BinaryOpScalarArray(arrayDivide,/,type) \
+UnaryOpScalarArray( arrayNegate,negate,type) \
+UnaryOpScalarArray( arrayReciprocal,reciprocal,type) \
+UnaryOpScalarArray( arraySqrt,sqrt,type) 
 // UnaryOpScalarArray(arrayGeneralLog)
 // UnaryOpScalarArray(arrayGeneralAbs,fabs,type) \ // this is wrong for complex numbers
 
@@ -213,6 +211,8 @@ typedef double complex complex_double ;
 
 DotProductScalarArray(arrayGeneralDotProduct,realtimes,double,0.0) ;
 DotProductScalarArray(arrayGeneralDotProduct,realtimes,float,0.0) ;
+
+
 DotProductScalarArray(arrayGeneralDotProduct,complextimes,complex_double,0.0 + I*0.0) ;
 DotProductScalarArray(arrayGeneralDotProduct,complextimes,complex_float,0.0 + I*0.0) ;
 
