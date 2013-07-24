@@ -75,66 +75,34 @@ _mm256_store_pd for the avx versions
 
 */
 
-#define BinaryOpSimdDoubleArray(name,binaryop) void  name##_##SIMD##_##double(uint32_t length, double  *   left, \
-    double   *   right,double *   result); \
- \
-void  name##_##SIMD##_##double(uint32_t length, double  *   left,double  *   right, double *   result){ \
-#ifdef    __AVX__      \
-    int ix = 0 ;  \
-    for (ix = 0; ix < length ; ix+= 4){ \
-        __m256d leftV = _mm256_load_pd(left + ix); \
-        __m256d rightV = _mm256_load_pd(right+ix ) ; \
-        __m256d resV =  leftV binaryop rightV ; \ 
-        _mm256_store_pd(result+ix , resV); \
-        }  \
-#elif defined(__SSE3__)   \
-  //  for pre sandybridge \
-    int ix = 0 ;  \
-    for (ix = 0; ix < length ; ix+=4){ \
-        __m128d leftV1 = _mm128_load_pd(left + ix); \
-        __m128d rightV1 =_mm128_load_pd(right+ix ) ; \
-        __m128d resV1 =  leftV1 binaryop rightV1 ; \ 
-        _mm128_store_pd(result+ix , resV1); \
-        __m128d leftV2 = _mm128_load_pd(left + ix+2); \
-        __m128d rightV2 =_mm128_load_pd(right+ix+2 ) ; \
-        __m128d resV2 =  leftV2 binaryop rightV2 ; \ 
-        _mm128_store_pd(result+ix+2 , resV2); \
-        }  \
-#else  \
-    //  scalar, sorry :) , for Old old intel x86, and for other architectures \ 
-    int ix = 0 ; \
-    for(ix = 0 ; ix < length ; ix ++){ \
-        restul[ix] =(left[ix] ) binaryop (right[ix]  ) ;  \
-    } \
-#endif \
-}
 
 
 
-#define BinaryOpSimdFloatArray(name,binaryop) void  name##_##SIMD##_##float(uint32_t length, float  *   left, \
+
+#define BinaryOpSimdArray(name,binaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3) void  name##_##SIMD##_##type(uint32_t length, float  *   left, \
     float   *   right,float *   result); \
  \
-void  name##_##SIMD##_##float(uint32_t length, float  *   left,float  *   right, float *   result){ \
+void  name##_##SIMD##_##type(uint32_t length, type  *   left,type  *   right, type *   result){ \
 #ifdef    __AVX__      \
     int ix = 0 ;  \
-    for (ix = 0; ix < length ; ix+= 8){ \
-        __m256d leftV = _mm256_load_pd(left + ix); \
-        __m256d rightV = _mm256_load_pd(right+ix ) ; \
+    for (ix = 0; ix < length ; ix+= sizeAVX){ \
+        __m256d leftV = simdloadAVX(left + ix); \
+        __m256d rightV =simdloadAVX(right+ix ) ; \
         __m256d resV =  leftV binaryop rightV ; \ 
-        _mm256_store_pd(result+ix , resV); \
+        simdstoreAVX(result+ix , resV); \
         }  \
 #elif defined(__SSE3__)   \
   //  for pre sandybridge \
     int ix = 0 ;  \
-    for (ix = 0; ix < length ; ix+=8){ \
-        __m128d leftV1 = _mm128_load_ps(left + ix); \
-        __m128d rightV1 =_mm128_load_ps(right+ix ) ; \
+    for (ix = 0; ix < length ; ix+=sizeAVX){ \
+        __m128d leftV1 = simdloadSSE3(left + ix); \
+        __m128d rightV1 =simdloadSSE3(right+ix ) ; \
         __m128d resV1 =  leftV1 binaryop rightV1 ; \ 
-        _mm128_store_pd(result+ix , resV1); \
-        __m128 leftV2 = _mm128_load_ps(left + ix+4); \
-        __m128 rightV2 =_mm128_load_ps(right+ix+4 ) ; \
+        simdstoreSSE3(result+ix , resV1); \
+        __m128 leftV2 = simdloadSSE3(left + ix+sizeSSE3); \
+        __m128 rightV2 =simdloadSSE3(right+ix+sizeSSE3 ) ; \
         __m128 resV2 =  leftV2 binaryop rightV2 ; \ 
-        _mm128_store_pd(result+ix+4 , resV2); \
+        simdstoreSSE3(result+ix+sizeSSE3 , resV2); \
         }  \
 #else  \
     //  scalar, sorry :) , for Old old intel x86, and for other architectures \ 
