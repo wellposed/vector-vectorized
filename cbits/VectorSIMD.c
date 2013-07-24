@@ -84,29 +84,29 @@ _mm256_store_pd for the avx versions
  \
 void  name##_##SIMD##_##type(uint32_t length, type  *   left,type  *   right, type *   result){ \
 #ifdef    __AVX__      \
-    int ix = 0 ;  \
-    for (ix = 0; ix < length ; ix+= sizeAVX){ \
-        __m256d leftV = simdloadAVX(left + ix); \
-        __m256d rightV =simdloadAVX(right+ix ) ; \
-        __m256d resV =  leftV binaryop rightV ; \ 
+    uint32_t ix = 0 ;  \
+    for(ix = 0; ix < length ; ix+= sizeAVX){ \
+        simdtypeAVX leftV = simdloadAVX(left + ix); \
+        simdtypeAVX rightV =simdloadAVX(right+ix ) ; \
+        simdtypeAVX resV =  leftV binaryop rightV ; \ 
         simdstoreAVX(result+ix , resV); \
         }  \
 #elif defined(__SSE3__)   \
   //  for pre sandybridge \
-    int ix = 0 ;  \
-    for (ix = 0; ix < length ; ix+=sizeAVX){ \
-        __m128d leftV1 = simdloadSSE3(left + ix); \
-        __m128d rightV1 =simdloadSSE3(right+ix ) ; \
-        __m128d resV1 =  leftV1 binaryop rightV1 ; \ 
+    uint32_t ix = 0 ;  \
+    for(ix = 0; ix < length ; ix+=sizeAVX){ \
+        simdtypeSSE3 leftV1 = simdloadSSE3(left + ix); \
+        simdtypeSSE3 rightV1 =simdloadSSE3(right+ix ) ; \
+        simdtypeSSE3 resV1 =  leftV1 binaryop rightV1 ; \ 
         simdstoreSSE3(result+ix , resV1); \
-        __m128 leftV2 = simdloadSSE3(left + ix+sizeSSE3); \
-        __m128 rightV2 =simdloadSSE3(right+ix+sizeSSE3 ) ; \
-        __m128 resV2 =  leftV2 binaryop rightV2 ; \ 
+        simdtypeSSE3 leftV2 = simdloadSSE3(left + ix+sizeSSE3); \
+        simdtypeSSE3 rightV2 =simdloadSSE3(right+ix+sizeSSE3 ) ; \
+        simdtypeSSE3 resV2 =  leftV2 binaryop rightV2 ; \ 
         simdstoreSSE3(result+ix+sizeSSE3 , resV2); \
         }  \
 #else  \
     //  scalar, sorry :) , for Old old intel x86, and for other architectures \ 
-    int ix = 0 ; \
+    uint32_t ix = 0 ; \
     for(ix = 0 ; ix < length ; ix+){ \
         result[ix] =(left[ix] ) binaryop (right[ix]  ) ;  \
     } \
@@ -117,16 +117,16 @@ void  name##_##SIMD##_##type(uint32_t length, type  *   left,type  *   right, ty
  \
 void  name##_##SIMD##_##type(uint32_t length, type  *   in, type *   result){ \
 #ifdef    __AVX__      \
-    int ix = 0 ;  \
-    for (ix = 0; ix < length ; ix+= sizeAVX){ \
+    uint32_t ix = 0 ;  \
+    for(ix = 0; ix < length ; ix+= sizeAVX){ \
         simdtypeAVX inV = simdloadAVX(in + ix); \
         simdtypeAVX resV =   unaryop(in) ; \ 
         simdstoreAVX(result+ix , resV); \
         }  \
 #elif defined(__SSE3__)   \
   //  for pre sandybridge \
-    int ix = 0 ;  \
-    for (ix = 0; ix < length ; ix+=sizeAVX){ \
+    uint32_t ix = 0 ;  \
+    for(ix = 0; ix < length ; ix+=sizeAVX){ \
         simdtypeSSE3 inV1 = simdloadSSE3(in + ix); \
         simdtypeSSE3 resV1 = unaryop(inV1) ; \ 
         simdstoreSSE3(result+ix , resV1); \
@@ -136,7 +136,7 @@ void  name##_##SIMD##_##type(uint32_t length, type  *   in, type *   result){ \
         }  \
 #else  \
     //  scalar, sorry :) , for Old old intel x86, and for other architectures \ 
-    int ix = 0 ; \
+    uint32_t ix = 0 ; \
     for(ix = 0 ; ix < length ; ix ++){ \
         result[ix] = unaryop(in[ix]) ;  \
     } \
@@ -149,4 +149,19 @@ note that 1 / v when v is a vector is casted to 1 being a replicated vector of 1
 */
 
 
+
+#define negate(numexp)  (-(numexp))
+#define reciprocal(numexp) (1.0/(numexp))
+
+
+#define mkNumFracOpsSIMD(type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3)  \
+BinaryOpSimdArray(arrayPlus,+ ,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3) \
+BinaryOpSimdArray(arrayMinus,-,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3) \
+BinaryOpSimdArray(arrayTimes,*,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3) \
+BinaryOpSimdArray(arrayDivide,/,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3) \
+ UnaryOpSimdArray(arrayNegate,negate,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3) \
+ UnaryOpSimdArray(arrayReciprocal ,reciprocal,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3) 
+ 
+
+mkNumFracOpsSIMD(double,__m256d,_mm256_load_pd,_mm256_store_pd,__m128d,_mm128_load_pd,_mm128_store_pd,4,2)
 
