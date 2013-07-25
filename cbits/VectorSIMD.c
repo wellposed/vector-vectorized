@@ -147,7 +147,7 @@ void  name##_##SIMD##_##type(uint32_t length, type  *   in, type *   result){ \
     uint32_t ix = 0 ;  \
     for(ix = 0; ix < length ; ix+= sizeAVX){ \
         simdtypeAVX inV = simdloadAVX(in + ix) ; \
-        simdtypeAVX resV =   unaryop(inV, broadAVX) ; \
+        simdtypeAVX resV =   unaryop(inV, broadAVX,simdtypeAVX) ; \
         simdstoreAVX(result+ix , resV); \
         }  } ; 
 #elif defined(__SSE3__)   
@@ -159,10 +159,10 @@ void  name##_##SIMD##_##type(uint32_t length, type  *   in, type *   result){ \
     uint32_t ix = 0 ;  \
     for(ix = 0; ix < length ; ix+=sizeAVX){ \
         simdtypeSSE3 inV1 = simdloadSSE3(in + ix); \
-        simdtypeSSE3 resV1 = unaryop(inV1, broadSSE3) ; \
+        simdtypeSSE3 resV1 = unaryop(inV1, broadSSE3,simdtypeSSE3) ; \
         simdstoreSSE3(result+ix , resV1); \
         simdtypeSSE3 inV2 = simdloadSSE3(in + ix+sizeSSE3); \
-        simdtypeSSE3 resV2 =  unaryop(inV2, broadSSE3) ; \
+        simdtypeSSE3 resV2 =  unaryop(inV2, broadSSE3,simdtypeSSE3) ; \
         simdstoreSSE3(result+ix+2 , resV2); \
         }  } ; 
 #else  
@@ -174,7 +174,7 @@ void  name##_##SIMD##_##type(uint32_t length, type  *   in, type *   result){ \
     uint32_t ix = 0 ; \
     for(ix = 0 ; ix < length ; ix ++){ \
         type inVal = (in[ix]) ; \
-        result[ix] = unaryop( inVal, broadScalar) ;  \
+        result[ix] = unaryop( inVal, broadScalar,type) ;  \
     } } ; 
 #endif 
 
@@ -186,15 +186,22 @@ note that 1 / v when v is a vector is casted to 1 being a replicated vector of 1
 
 
 
-#define negate(numexp,castType)  (-(numexp) )   
+#define negate(numexp,nothing,boring)  (-(numexp) )   
 
-#define reciprocal(numexp,broadcaster) (broadcaster(1.0)/ (numexp)) 
+#define reciprocal(numexp,broadcaster,myty) ( ( (myty) broadcaster(1.0) ) / (numexp)) 
 
 #define broacastScalar(expr) expr 
 
-#define broacast2Vect(expr) {(expr),(expr)}
-#define broacast4Vect(expr) {(expr),(expr),(expr),(expr)}
-#define broacast8Vect(exp) {(expr),(expr),(expr),(expr),(expr),(expr),(expr),(expr)}
+#define broadcast2Vect(expr) {(expr),(expr)}
+#define broadcast4Vect(expr) {(expr),(expr),(expr),(expr)}
+#define broadcast8Vect(exp) {(expr),(expr),(expr),(expr),(expr),(expr),(expr),(expr)}
+/*
+MOVDDUP: __m128d _mm_movedup_pd(__m128d a)
+MOVDDUP: __m128d _mm_loaddup_pd(double const * dp)
+
+
+*/
+
 
 #define mkNumFracOpsSIMD(type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3)  \
 BinaryOpSimdArray(arrayPlus,+ ,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3) ; \
