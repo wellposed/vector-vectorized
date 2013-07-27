@@ -1,2 +1,2 @@
-# vectorized operations, using clang
+# vectorized operations, using C with cpu intrinsics
 

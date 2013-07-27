@@ -65,9 +65,13 @@ micro architectures
 basically every cycle I can try to have an independent 
 vector mult/blend/fma, vector add/shuffle/fma, shuffle/blend,   load/storeaddress ,load/storeaddress 
 
-(I *should* unroll my vectorized loops to exploit that, but for now I wont)
 
- elem32 =  2* elem16
+Can i do something tricky around the length and still only require the 32byte 
+alignment?
+
+at the cost of a little bit more code duplication, 
+
+
 
 
 __m256d means v4df (double precsion 64bit floats)
@@ -80,24 +84,9 @@ _mm256_store_pd for the avx versions
 
 
 
-/*
-from the avx intrinsics header 
- typedef double __v4df __attribute__ ((__vector_size__ (32)));
- typedef float __v8sf __attribute__ ((__vector_size__ (32)));
- typedef long long __v4di __attribute__ ((__vector_size__ (32)));
- typedef int __v8si __attribute__ ((__vector_size__ (32)));
- typedef short __v16hi __attribute__ ((__vector_size__ (32)));
- typedef char __v32qi __attribute__ ((__vector_size__ (32)));
- 
- typedef float __m256 __attribute__ ((__vector_size__ (32)));
- typedef double __m256d __attribute__((__vector_size__(32)));
- typedef long long __m256i __attribute__((__vector_size__(32)));
-
-*/
-
 
 #if   defined(__AVX__)      
-#define BinaryOpSimdArray(name,binaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3) \ 
+#define BinaryOpSimdArray(name,binaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3) \
 void  name##_##SIMD##_##type(uint32_t length, type  *   left,  type   *   right, type *   result); \
  \
 void  name##_##SIMD##_##type(uint32_t length, type  *   left,type  *   right, type *   result){ \
@@ -109,7 +98,7 @@ void  name##_##SIMD##_##type(uint32_t length, type  *   left,type  *   right, ty
         simdstoreAVX(result+ix , resV); \
         }  }
 #elif defined(__SSE3__)   
-#define BinaryOpSimdArray(name,binaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3) \ 
+#define BinaryOpSimdArray(name,binaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3) \
 void  name##_##SIMD##_##type(uint32_t length, type  *   left, type   *   right,type *   result); \
  \
 void  name##_##SIMD##_##type(uint32_t length, type  *   left,type  *   right, type *   result){ \        
@@ -126,7 +115,7 @@ void  name##_##SIMD##_##type(uint32_t length, type  *   left,type  *   right, ty
         simdstoreSSE3(result+ix+sizeSSE3 , resV2); \
         } }
 #else
-#define BinaryOpSimdArray(name,binaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3) \ 
+#define BinaryOpSimdArray(name,binaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3) \
 void  name##_##SIMD##_##type(uint32_t length, type  *   left,   type   *   right,type *   result); \
  \
 void  name##_##SIMD##_##type(uint32_t length, type  *   left,type  *   right, type *   result){ \  
