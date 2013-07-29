@@ -66,12 +66,6 @@ basically every cycle I can try to have an independent
 vector mult/blend/fma, vector add/shuffle/fma, shuffle/blend,   load/storeaddress ,load/storeaddress 
 
 
-Can i do something tricky around the length and still only require the 32byte 
-alignment?
-
-at the cost of a little bit more code duplication, 
-
-
 
 
 __m256d means v4df (double precsion 64bit floats)
@@ -83,7 +77,13 @@ _mm256_store_pd for the avx versions
 */
 
 
+/*
+correctness requirement:
+lengths must a multiple of 32byte/(size of element in bytes)
 
+pointers must be 32bytes aligned 
+
+*/
 
 #if   defined(__AVX__)      
 #define BinaryOpSimdArray(name,binaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3) \
