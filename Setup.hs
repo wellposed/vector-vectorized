@@ -17,7 +17,7 @@ main :: IO ()
 #if x86_64_HOST_ARCH
 main = 
     do 
-        putStrLn "Please have Clang installed or the build will fail"
+        putStrLn "Please have a recent clang or gcc installed or the build will fail"
         defaultMainWithHooks myhook 
 #else   
 main = error "only x86_64 architectures are currently supported" 
@@ -26,7 +26,10 @@ main = error "only x86_64 architectures are currently supported"
 
 {-
 this is to work around mac having a really old GCC version and AS (assembler)
-darwin is OSX
+can't use nice simd with the apple gcc, have to make GHC use Clang instead
+
+darwin = OSX
+
 -}
 #if darwin_HOST_OS 
 myhook =  set lensBuildHook2UserHooks myBuildHook simpleUserHooks 
