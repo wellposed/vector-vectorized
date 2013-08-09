@@ -81,9 +81,18 @@ _mm256_store_pd for the avx versions
 correctness requirement:
 lengths must a multiple of 32byte/(size of element in bytes)
 
-pointers must be 32bytes aligned 
+XXXX pointers must be 32bytes aligned  
+
+use unaligned loads and stores for now
 
 */
+
+
+
+
+
+
+/*   Pointwise vector ops */
 
 #if   defined(__AVX__)      
 #define BinaryOpSimdArray(name,binaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3) \
@@ -201,8 +210,22 @@ UnaryOpSimdArray(arrayNegate,negate,type,simdtypeAVX,simdloadAVX,simdstoreAVX,si
 UnaryOpSimdArray(arrayReciprocal ,reciprocal,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3) ;
  
 
-mkNumFracOpsSIMD(double,__m256d,_mm256_load_pd,_mm256_store_pd,__m128d,_mm128_load_pd,_mm128_store_pd,4,2,broadcastScalar,broadcast4Vect,broadcast2Vect);
+// mkNumFracOpsSIMD(double,__m256d,_mm256_load_pd,_mm256_store_pd,__m128d,_mm128_load_pd,_mm128_store_pd,4,2,broadcastScalar,broadcast4Vect,broadcast2Vect);
+mkNumFracOpsSIMD(double,__m256d,_mm256_loadu_pd,_mm256_storeu_pd,__m128d,_mm128_loadu_pd,_mm128_storeu_pd,4,2,broadcastScalar,broadcast4Vect,broadcast2Vect);
 
+
+// need to test these later 
+// mkNumFracOpsSIMD(float,__m256d,_mm256_load_ps,_mm256_store_ps,__m128d,_mm128_load_ps,_mm128_store_ps,8,4,broadcastScalar,broadcast8Vect,broadcast4Vect);
+// using unaligned for now to simplify associated engineering
+mkNumFracOpsSIMD(float,__m256d,_mm256_loadu_ps,_mm256_storeu_ps,__m128d,_mm128_loadu_ps,_mm128_storeu_ps,8,4,broadcastScalar,broadcast8Vect,broadcast4Vect);
+
+
+
+/*
+need to add DOT product, 
+should do scalar fallback, sse3, avx and FMA level versions
+lets just do scalar , sse3
+*/
 
 // __m256d broadcastAVX(double val){
 //     return (__builtin_shufflevector({val},{val},0,0,0,0));
