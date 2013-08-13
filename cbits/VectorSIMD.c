@@ -253,27 +253,37 @@ both clang and gcc support array indexing into simd vectors
 
 double dotproduct_SIMD_double(uint32_t length, double  *   left,   double   *   right){
 #if defined(__FMA__) && defined(__AVX2__)
+    // don't really need the avx2 assumption, but why not? :) 
+
     for(int ix = 0 ; ix < length; ix += 4){
-        result += _mm256_loadu_pd(left + ix)  + _mm256_loadu_pd()
+        result =_mm256_fmadd_pd(result,_mm256_loadu_pd(left + ix),_mm256_loadu_pd(right+ix));
         }
-    return  mm256_hadd_pd(result)  
+    __m128d reduced1 = _mm_hadd_pd ({result[0],result[1]},{result[2],result[3]}) ; 
+    __m128d reduced2 = _mm_hadd_pd(reduced1, {0.0, 0.0})  ;
+    return  reduced2[0];
+
+    /*
+    FMA3 operations are 
+    d = a + b * C
+    where d = one of a,b,c
+    */
 
 #elif   defined(__AVX__)      
     __m256d result = {0.0,0.0,0.0,0.0};
     for(int ix = 0 ; ix < length; ix += 4){
-        result += _mm256_loadu_pd(left + ix)  + _mm256_loadu_pd()
+        result += _mm256_loadu_pd(left + ix)  + _mm256_loadu_pd(right+ix)
         }
 
-    __m128d reduced1 = _mm_hadd_pd ({result[0],result[1]},{result[2],result[3]})  
-    __m128d reduced2 =   
-    return  
+    __m128d reduced1 = _mm_hadd_pd ({result[0],result[1]},{result[2],result[3]}) ; 
+    __m128d reduced2 = _mm_hadd_pd(reduced1, {0.0, 0.0})  ;
+    return  reduced2[0];
 
 #elif defined(__SSE3__)   
     __m128d result = {0.0,0.0};
     for(int ix = 0 ; ix < length; ix += 2){
-        result += _mm128_loadu_pd(left + ix)  + _mm128_loadu_pd()
+        result += _mm128_loadu_pd(left + ix)  + _mm128_loadu_pd(right+ix);
         }
-    __m128d reduced =  _mm_hadd_pd(result,result)    
+    __m128d reduced =  _mm_hadd_pd(result,result) ;   
     return reduced[0]
     
 
