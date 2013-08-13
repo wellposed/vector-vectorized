@@ -90,6 +90,30 @@ use unaligned loads and stores for now
 
 
 
+/*
+TODO / FIXME
+
+cbits/VectorSIMD.c:220:126: warning: excess elements in vector initializer
+  ...broadcast8Vect,broadcast4Vect);
+     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+cbits/VectorSIMD.c:210:158: note: expanded from macro 'mkNumFracOpsSIMD'
+  ...sizeSSE3,broadScalar,broadAVX,broadSSE3) ;
+                          ^
+cbits/VectorSIMD.c:148:43: note: expanded from macro '\
+UnaryOpSimdArray'
+        simdtypeAVX resV =   unaryop(inV, broadAVX,simdtypeAVX) ; \
+                                          ^
+cbits/VectorSIMD.c:189:56: note: expanded from macro 'reciprocal'
+#define reciprocal(numexp,broadcaster,myty) ( ( (myty) broadcaster(1.0) ) / (numexp)) 
+                                                       ^
+cbits/VectorSIMD.c:195:59: note: expanded from macro 'broadcast8Vect'
+#define broadcast8Vect(expr) {(expr),(expr),(expr),(expr),(expr),(expr),(expr),(expr)}
+                                                          ^~~~~~
+1 warning generated.
+
+
+*/
+
 
 
 /*   Pointwise vector ops */
@@ -138,7 +162,7 @@ void  name##_##SIMD##_##type(uint32_t length, type  *   left,type  *   right, ty
 
 
 #ifdef  __AVX__    
-#define UnaryOpSimdArray(name,unaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3) \ 
+#define UnaryOpSimdArray(name,unaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3) \
 void  name##_##SIMD##_##type(uint32_t length, type   *   in,type *   result); \
  \
 void  name##_##SIMD##_##type(uint32_t length, type  *   in, type *   result){ \
@@ -149,7 +173,7 @@ void  name##_##SIMD##_##type(uint32_t length, type  *   in, type *   result){ \
         simdstoreAVX(result+ix , resV); \
         }  } ; 
 #elif defined(__SSE3__)   
-#define UnaryOpSimdArray(name,unaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3) \ 
+#define UnaryOpSimdArray(name,unaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3) \
 void  name##_##SIMD##_##type(uint32_t length, type   *   in,type *   result); \
  \
 void  name##_##SIMD##_##type(uint32_t length, type  *   in, type *   result){ \        
@@ -164,7 +188,7 @@ void  name##_##SIMD##_##type(uint32_t length, type  *   in, type *   result){ \
         simdstoreSSE3(result+ix+2 , resV2); \
         }  } ; 
 #else  
-#define UnaryOpSimdArray(name,unaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3) \ 
+#define UnaryOpSimdArray(name,unaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3) \
 void  name##_##SIMD##_##type(uint32_t length, type   *   in,type *   result); \
  \
 void  name##_##SIMD##_##type(uint32_t length, type  *   in, type *   result){ \
@@ -192,7 +216,7 @@ note that 1 / v when v is a vector is casted to 1 being a replicated vector of 1
 
 #define broadcast2Vect(expr) {(expr),(expr)}
 #define broadcast4Vect(expr) {(expr),(expr),(expr),(expr)}
-#define broadcast8Vect(exp) {(expr),(expr),(expr),(expr),(expr),(expr),(expr),(expr)}
+#define broadcast8Vect(expr) {(expr),(expr),(expr),(expr),(expr),(expr),(expr),(expr)}
 /*
 MOVDDUP: __m128d _mm_movedup_pd(__m128d a)
 MOVDDUP: __m128d _mm_loaddup_pd(double const * dp)
@@ -256,26 +280,27 @@ double dotproduct_SIMD_double(uint32_t length, double  *   left,   double   *   
     // don't really need the avx2 assumption, but why not? :) 
 
     for(int ix = 0 ; ix < length; ix += 4){
-        result =_mm256_fmadd_pd(result,_mm256_loadu_pd(left + ix),_mm256_loadu_pd(right+ix));
+        result =_mm256_fmadd_pd(_mm256_loadu_pd(left + ix),_mm256_loadu_pd(right+ix),result);
         }
-    __m128d reduced1 = _mm_hadd_pd ({result[0],result[1]},{result[2],result[3]}) ; 
-    __m128d reduced2 = _mm_hadd_pd(reduced1, {0.0, 0.0})  ;
+    __m128d reduced1 = _mm_hadd_pd ((__m128d){result[0],result[1]},(__m128d){result[2],result[3]}) ; 
+    __m128d reduced2 = _mm_hadd_pd(reduced1, (__m128d){0.0, 0.0})  ;
     return  reduced2[0];
 
     /*
-    FMA3 operations are 
-    d = a + b * C
-    where d = one of a,b,c
+since the intrinsics for FMA aren't sanely documented anywhere else, cribbing notes from 
+a number of sources, but basically
+fma(a,b,c,)== a *b + c 
+(same as the fma op in the c/c++ specs )
     */
 
 #elif   defined(__AVX__)      
     __m256d result = {0.0,0.0,0.0,0.0};
     for(int ix = 0 ; ix < length; ix += 4){
-        result += _mm256_loadu_pd(left + ix)  + _mm256_loadu_pd(right+ix)
+        result += _mm256_loadu_pd(left + ix)  + _mm256_loadu_pd(right+ix);
         }
 
-    __m128d reduced1 = _mm_hadd_pd ({result[0],result[1]},{result[2],result[3]}) ; 
-    __m128d reduced2 = _mm_hadd_pd(reduced1, {0.0, 0.0})  ;
+    __m128d reduced1 = _mm_hadd_pd ((__m128d){result[0],result[1]},(__m128d){result[2],result[3]}) ; 
+    __m128d reduced2 = _mm_hadd_pd(reduced1, (__m128d){0.0, 0.0})  ;
     return  reduced2[0];
 
 #elif defined(__SSE3__)   
@@ -284,7 +309,7 @@ double dotproduct_SIMD_double(uint32_t length, double  *   left,   double   *   
         result += _mm128_loadu_pd(left + ix)  + _mm128_loadu_pd(right+ix);
         }
     __m128d reduced =  _mm_hadd_pd(result,result) ;   
-    return reduced[0]
+    return reduced[0];
     
 
 #else
