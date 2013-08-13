@@ -220,6 +220,72 @@ mkNumFracOpsSIMD(double,__m256d,_mm256_loadu_pd,_mm256_storeu_pd,__m128d,_mm128_
 mkNumFracOpsSIMD(float,__m256d,_mm256_loadu_ps,_mm256_storeu_ps,__m128d,_mm128_loadu_ps,_mm128_storeu_ps,8,4,broadcastScalar,broadcast8Vect,broadcast4Vect);
 
 
+/* NOTE: I have not tested the FMA code
+both avx and fma versions will use YMM registers
+*/
+
+/*
+NOTE: will have to add the tail of  additions
+
+note also: because i'm doing differnt arithmetic orders depending on the instructions
+avalable, there may be tiny differences in the computed answers on different machines
+
+also the pipelining / port / ILP stuff won't be optimal for now, but thats ok
+
+(V)PSHUFD: __m128i _mm_shuffle_epi32(__m128i a, int n)
+VPSHUFD: __m256i _mm256_shuffle_epi32(__m256i a, const int n)
+
+__m256 _mm256_permute2f128_ps (__m256 a, __m256 b, int control) 
+__m256d _mm256_permute2f128_pd (__m256d a, __m256d b, int control)
+
+
+VPERMPD: __m256d _mm256_permute4x64_pd(__m256d a, int control) ;
+
+
+
+note: for dot product, at the end I need to pick out the first element
+of the simd vector, and return that associated floating point value
+
+both clang and gcc support array indexing into simd vectors
+
+
+*/
+
+double dotproduct_SIMD_double(uint32_t length, double  *   left,   double   *   right){
+#if defined(__FMA__) && defined(__AVX2__)
+    for(int ix = 0 ; ix < length; ix += 4){
+        result += _mm256_loadu_pd(left + ix)  + _mm256_loadu_pd()
+        }
+    return  mm256_hadd_pd(result)  
+
+#elif   defined(__AVX__)      
+    __m256d result = {0.0,0.0,0.0,0.0};
+    for(int ix = 0 ; ix < length; ix += 4){
+        result += _mm256_loadu_pd(left + ix)  + _mm256_loadu_pd()
+        }
+
+    __m128d reduced1 = _mm_hadd_pd ({result[0],result[1]},{result[2],result[3]})  
+    __m128d reduced2 =   
+    return  
+
+#elif defined(__SSE3__)   
+    __m128d result = {0.0,0.0};
+    for(int ix = 0 ; ix < length; ix += 2){
+        result += _mm128_loadu_pd(left + ix)  + _mm128_loadu_pd()
+        }
+    __m128d reduced =  _mm_hadd_pd(result,result)    
+    return reduced[0]
+    
+
+#else
+    double result = 0.0 ; 
+    for(int ix = 0 ; ix< length ; ix ++ ){
+        result+= left[ix]* right[ix];
+        }
+    return result ; 
+
+#endif 
+}
 
 /*
 need to add DOT product, 
