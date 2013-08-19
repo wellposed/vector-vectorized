@@ -245,13 +245,13 @@ mkNumFracOpsSIMD(type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdload
 */
 
 // mkNumFracOpsSIMD(double,__m256d,_mm256_load_pd,_mm256_store_pd,__m128d,_mm128_load_pd,_mm128_store_pd,4,2,broadcastScalar,broadcast4Vect,broadcast2Vect);
-mkNumFracOpsSIMD(double,__m256d,_mm256_loadu_pd,_mm256_storeu_pd,__m128d,_mm_loadu_pd,_mm_storeu_pd,4,2,broadcastScalar,broadcast4Vect,broadcast2Vect);
+mkNumFracOpsSIMD(double,__m256d,_mm256_load_pd,_mm256_store_pd,__m128d,_mm_load_pd,_mm_store_pd,4,2,broadcastScalar,broadcast4Vect,broadcast2Vect);
 
 
 // need to test these later 
 // mkNumFracOpsSIMD(float,__m256d,_mm256_load_ps,_mm256_store_ps,__m128d,_mm128_load_ps,_mm128_store_ps,8,4,broadcastScalar,broadcast8Vect,broadcast4Vect);
 // using unaligned for now to simplify associated engineering
-mkNumFracOpsSIMD(float,__m256,_mm256_loadu_ps,_mm256_storeu_ps,__m128,_mm_loadu_ps,_mm_storeu_ps,8,4,broadcastScalar,broadcast8Vect,broadcast4Vect);
+mkNumFracOpsSIMD(float,__m256,_mm256_load_ps,_mm256_store_ps,__m128,_mm_load_ps,_mm_store_ps,8,4,broadcastScalar,broadcast8Vect,broadcast4Vect);
 
 
 /* NOTE: I have not tested the FMA code
@@ -293,7 +293,7 @@ double dotproduct_SIMD_double(uint32_t length, double  *   left,   double   *   
     // don't really need the avx2 assumption, but why not? :) 
 
     for(int ix = 0 ; ix < length; ix += 4){
-        result =_mm256_fmadd_pd(_mm256_loadu_pd(left + ix),_mm256_loadu_pd(right+ix),result);
+        result =_mm256_fmadd_pd(_mm256_load_pd(left + ix),_mm256_load_pd(right+ix),result);
         }
     __m128d reduced1 = _mm_hadd_pd ((__m128d){result[0],result[1]},(__m128d){result[2],result[3]}) ; 
     __m128d reduced2 = _mm_hadd_pd(reduced1, (__m128d){0.0, 0.0})  ;
@@ -309,7 +309,7 @@ fma(a,b,c,)== a *b + c
 #elif   defined(__AVX__)      
     __m256d result = {0.0,0.0,0.0,0.0};
     for(int ix = 0 ; ix < length; ix += 4){
-        result += _mm256_loadu_pd(left + ix)  + _mm256_loadu_pd(right+ix);
+        result += _mm256_load_pd(left + ix)  + _mm256_load_pd(right+ix);
         }
 
     __m128d reduced1 = _mm_hadd_pd ((__m128d){result[0],result[1]},(__m128d){result[2],result[3]}) ; 
@@ -319,7 +319,7 @@ fma(a,b,c,)== a *b + c
 #elif defined(__SSE3__)   
     __m128d result = {0.0,0.0};
     for(int ix = 0 ; ix < length; ix += 2){
-        result += _mm_loadu_pd(left + ix)  + _mm_loadu_pd(right+ix);
+        result += _mm_load_pd(left + ix)  + _mm_load_pd(right+ix);
         }
     __m128d reduced =  _mm_hadd_pd(result,result) ;   
     return reduced[0];
@@ -362,7 +362,7 @@ fma(a,b,c,)== a *b + c
 #elif   defined(__AVX__)      
     __m256d result = {0.0,0.0,0.0,0.0};
     for(int ix = 0 ; ix < length; ix += 8){
-        result += _mm256_load_ps(left + ix)  + _mm256_loadu_ps(right+ix);
+        result += _mm256_load_ps(left + ix)  + _mm256_load_ps(right+ix);
         }
     __m128 reduced1 = _mm_hadd_ps ((__m128){result[0],result[1],result[2],result[3]},
                             (__m128){result[4],result[5],result[6],result[7]}) ;
@@ -372,7 +372,7 @@ fma(a,b,c,)== a *b + c
 #elif defined(__SSE3__)   
     __m128d result = {0.0,0.0};
     for(int ix = 0 ; ix < length; ix += 4){
-        result += _mm_loadu_ps(left + ix)  + _mm_loadu_ps(right+ix);
+        result += _mm_load_ps(left + ix)  + _mm_load_ps(right+ix);
         }
     __m128d reduced =  _mm_hadd_ps(result,result) ;   
     return reduced[0]+reduced[1];
