@@ -120,8 +120,8 @@ cbits/VectorSIMD.c:195:59: note: expanded from macro 'broadcast8Vect'
 
 #if   defined(__AVX__)      
 #define BinaryOpSimdArray(name,binaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3) \
-void  name##_##SIMD##_##type(uint32_t length, type  *   left,  type   *   right, type *   result); \
-\
+void  name##_##SIMD##_##type(uint32_t length, type  *   left,  type   *   right, type *   result) ; \
+ \
 void  name##_##SIMD##_##type(uint32_t length, type  *   left,type  *   right, type *   result){ \
     uint32_t ix = 0 ;  \
     for(ix = 0; ix < length ; ix+= sizeAVX){ \
@@ -129,13 +129,13 @@ void  name##_##SIMD##_##type(uint32_t length, type  *   left,type  *   right, ty
         simdtypeAVX rightV =simdloadAVX(right+ix ) ; \
         simdtypeAVX resV =  leftV binaryop rightV ; \
         simdstoreAVX(result+ix , resV); \
-        }  };
+        } ; \ 
+         };
 #elif defined(__SSE3__)   
 #define BinaryOpSimdArray(name,binaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3) \
 void  name##_##SIMD##_##type(uint32_t length, type  *   left, type   *   right,type *   result); \
 \
 void  name##_##SIMD##_##type(uint32_t length, type  *   left,type  *   right, type *   result){ \
-  //  for pre sandybridge \
     uint32_t ix = 0 ;  \
     for(ix = 0; ix < length ; ix+=sizeAVX){ \
         simdtypeSSE3 leftV1 = simdloadSSE3(left + ix); \
@@ -146,17 +146,19 @@ void  name##_##SIMD##_##type(uint32_t length, type  *   left,type  *   right, ty
         simdtypeSSE3 rightV2 =simdloadSSE3(right+ix+sizeSSE3 ) ; \
         simdtypeSSE3 resV2 =  leftV2 binaryop rightV2 ; \
         simdstoreSSE3(result+ix+sizeSSE3 , resV2); \
-        } };
+        } ; \
+    };
 #else
 #define BinaryOpSimdArray(name,binaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3) \
 void  name##_##SIMD##_##type(uint32_t length, type  *   left,   type   *   right,type *   result); \
 \
 void  name##_##SIMD##_##type(uint32_t length, type  *   left,type  *   right, type *   result){ \
-    //  scalar, sorry :) , for Old old intel x86, and for other architectures \
+    /* scalar, sorry :) , for Old old intel x86, and for other architectures */\
     uint32_t ix = 0 ; \
     for(ix = 0 ; ix < length ; ix+){ \
         result[ix] =(left[ix] ) binaryop (right[ix]  ) ;  \
-    } };
+    } ;\
+};
 #endif 
 
 
@@ -171,13 +173,14 @@ void  name##_##SIMD##_##type(uint32_t length, type  *   in, type *   result){ \
         simdtypeAVX inV = simdloadAVX(in + ix) ; \
         simdtypeAVX resV =   unaryop(inV, broadAVX,simdtypeAVX) ; \
         simdstoreAVX(result+ix , resV); \
-        }  } ; 
+        } ; \
+      } ; 
 #elif defined(__SSE3__)   
 #define UnaryOpSimdArray(name,unaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3) \
 void  name##_##SIMD##_##type(uint32_t length, type   *   in,type *   result) ; \
 \
 void  name##_##SIMD##_##type(uint32_t length, type  *   in, type *   result){ \
-  //  for pre sandybridge \
+ /*  for pre sandybridge*/ \
     uint32_t ix = 0 ;  \
     for(ix = 0; ix < length ; ix+=sizeAVX){ \
         simdtypeSSE3 inV1 = simdloadSSE3(in + ix); \
@@ -186,18 +189,20 @@ void  name##_##SIMD##_##type(uint32_t length, type  *   in, type *   result){ \
         simdtypeSSE3 inV2 = simdloadSSE3(in + ix+sizeSSE3); \
         simdtypeSSE3 resV2 =  unaryop(inV2, broadSSE3,simdtypeSSE3) ; \
         simdstoreSSE3(result+ix+2 , resV2); \
-        }  } ; 
+        } ;\
+         } ; 
 #else  
 #define UnaryOpSimdArray(name,unaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3) \
 void  name##_##SIMD##_##type(uint32_t length, type   *   in,type *   result); \
 \
 void  name##_##SIMD##_##type(uint32_t length, type  *   in, type *   result){ \
-    //  scalar, sorry :) , for Old old intel x86, and for other architectures \
+    /* scalar, sorry :) , for Old old intel x86, and for other architectures*/ \
     uint32_t ix = 0 ; \
     for(ix = 0 ; ix < length ; ix ++){ \
         type inVal = (in[ix]) ; \
         result[ix] = unaryop( inVal, broadScalar,type) ;  \
-    } } ; 
+    } ;\
+} ; 
 #endif 
 
 
@@ -235,13 +240,13 @@ UnaryOpSimdArray(arrayReciprocal ,reciprocal,type,simdtypeAVX,simdloadAVX,simdst
  
 
 // mkNumFracOpsSIMD(double,__m256d,_mm256_load_pd,_mm256_store_pd,__m128d,_mm128_load_pd,_mm128_store_pd,4,2,broadcastScalar,broadcast4Vect,broadcast2Vect);
-mkNumFracOpsSIMD(double,__m256d,_mm256_loadu_pd,_mm256_storeu_pd,__m128d,_mm128_loadu_pd,_mm128_storeu_pd,4,2,broadcastScalar,broadcast4Vect,broadcast2Vect);
+mkNumFracOpsSIMD(double,__m256d,_mm256_loadu_pd,_mm256_storeu_pd,__m128d,_mm_loadu_pd,_mm_storeu_pd,4,2,broadcastScalar,broadcast4Vect,broadcast2Vect);
 
 
 // need to test these later 
 // mkNumFracOpsSIMD(float,__m256d,_mm256_load_ps,_mm256_store_ps,__m128d,_mm128_load_ps,_mm128_store_ps,8,4,broadcastScalar,broadcast8Vect,broadcast4Vect);
 // using unaligned for now to simplify associated engineering
-mkNumFracOpsSIMD(float,__m256d,_mm256_loadu_ps,_mm256_storeu_ps,__m128d,_mm128_loadu_ps,_mm128_storeu_ps,8,4,broadcastScalar,broadcast8Vect,broadcast4Vect);
+mkNumFracOpsSIMD(float,__m256d,_mm256_loadu_ps,_mm256_storeu_ps,__m128d,_mm_loadu_ps,_mm_storeu_ps,8,4,broadcastScalar,broadcast8Vect,broadcast4Vect);
 
 
 /* NOTE: I have not tested the FMA code
@@ -309,7 +314,7 @@ fma(a,b,c,)== a *b + c
 #elif defined(__SSE3__)   
     __m128d result = {0.0,0.0};
     for(int ix = 0 ; ix < length; ix += 2){
-        result += _mm128_loadu_pd(left + ix)  + _mm128_loadu_pd(right+ix);
+        result += _mm_loadu_pd(left + ix)  + _mm_loadu_pd(right+ix);
         }
     __m128d reduced =  _mm_hadd_pd(result,result) ;   
     return reduced[0];
@@ -338,7 +343,7 @@ float dotproduct_SIMD_float(uint32_t length, float  *   left,   float   *   righ
         result =_mm256_fmadd_ps(_mm256_load_ps(left + ix),_mm256_load_ps(right+ix),result);
         }
     __m128 reduced1 = _mm_hadd_pd ((__m128){result[0],result[1],result[2],result[3]},
-                            (__m128){result[4],result[5],result[6],result[7]}) ; 
+                            (__m128){result[4],result[5],result[6],result[7]}) ;
     __m128 reduced2 = _mm_hadd_pd(reduced1, (__m128d){0.0, 0.0,0.0, 0.0})  ;
     return  reduced2[0]+ reduced2[1];
 
@@ -355,17 +360,17 @@ fma(a,b,c,)== a *b + c
         result += _mm256_load_pd(left + ix)  + _mm256_loadu_pd(right+ix);
         }
     __m128 reduced1 = _mm_hadd_pd ((__m128){result[0],result[1],result[2],result[3]},
-                            (__m128){result[4],result[5],result[6],result[7]}) ; 
+                            (__m128){result[4],result[5],result[6],result[7]}) ;
     __m128 reduced2 = _mm_hadd_pd(reduced1, (__m128d){0.0, 0.0,0.0, 0.0})  ;
     return  reduced2[0]+ reduced2[1];
 
 #elif defined(__SSE3__)   
     __m128d result = {0.0,0.0};
     for(int ix = 0 ; ix < length; ix += 4){
-        result += _mm128_loadu_pd(left + ix)  + _mm128_loadu_pd(right+ix);
+        result += _mm_loadu_pd(left + ix)  + _mm_loadu_pd(right+ix);
         }
     __m128d reduced =  _mm_hadd_ps(result,result) ;   
-    return reduced[0]+reduced2[1];
+    return reduced[0]+reduced[1];
     
 
 #else
