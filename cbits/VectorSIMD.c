@@ -121,7 +121,7 @@ cbits/VectorSIMD.c:195:59: note: expanded from macro 'broadcast8Vect'
 #if   defined(__AVX__)      
 #define BinaryOpSimdArray(name,binaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3) \
 void  name##_##SIMD##_##type(uint32_t length, type  *   left,  type   *   right, type *   result); \
- \
+\
 void  name##_##SIMD##_##type(uint32_t length, type  *   left,type  *   right, type *   result){ \
     uint32_t ix = 0 ;  \
     for(ix = 0; ix < length ; ix+= sizeAVX){ \
@@ -129,12 +129,12 @@ void  name##_##SIMD##_##type(uint32_t length, type  *   left,type  *   right, ty
         simdtypeAVX rightV =simdloadAVX(right+ix ) ; \
         simdtypeAVX resV =  leftV binaryop rightV ; \
         simdstoreAVX(result+ix , resV); \
-        }  }
+        }  };
 #elif defined(__SSE3__)   
 #define BinaryOpSimdArray(name,binaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3) \
 void  name##_##SIMD##_##type(uint32_t length, type  *   left, type   *   right,type *   result); \
- \
-void  name##_##SIMD##_##type(uint32_t length, type  *   left,type  *   right, type *   result){ \        
+\
+void  name##_##SIMD##_##type(uint32_t length, type  *   left,type  *   right, type *   result){ \
   //  for pre sandybridge \
     uint32_t ix = 0 ;  \
     for(ix = 0; ix < length ; ix+=sizeAVX){ \
@@ -146,17 +146,17 @@ void  name##_##SIMD##_##type(uint32_t length, type  *   left,type  *   right, ty
         simdtypeSSE3 rightV2 =simdloadSSE3(right+ix+sizeSSE3 ) ; \
         simdtypeSSE3 resV2 =  leftV2 binaryop rightV2 ; \
         simdstoreSSE3(result+ix+sizeSSE3 , resV2); \
-        } }
+        } };
 #else
 #define BinaryOpSimdArray(name,binaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3) \
 void  name##_##SIMD##_##type(uint32_t length, type  *   left,   type   *   right,type *   result); \
- \
-void  name##_##SIMD##_##type(uint32_t length, type  *   left,type  *   right, type *   result){ \  
+\
+void  name##_##SIMD##_##type(uint32_t length, type  *   left,type  *   right, type *   result){ \
     //  scalar, sorry :) , for Old old intel x86, and for other architectures \
     uint32_t ix = 0 ; \
     for(ix = 0 ; ix < length ; ix+){ \
         result[ix] =(left[ix] ) binaryop (right[ix]  ) ;  \
-    } }
+    } };
 #endif 
 
 
@@ -164,7 +164,7 @@ void  name##_##SIMD##_##type(uint32_t length, type  *   left,type  *   right, ty
 #ifdef  __AVX__    
 #define UnaryOpSimdArray(name,unaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3) \
 void  name##_##SIMD##_##type(uint32_t length, type   *   in,type *   result); \
- \
+\
 void  name##_##SIMD##_##type(uint32_t length, type  *   in, type *   result){ \
     uint32_t ix = 0 ;  \
     for(ix = 0; ix < length ; ix+= sizeAVX){ \
@@ -174,9 +174,9 @@ void  name##_##SIMD##_##type(uint32_t length, type  *   in, type *   result){ \
         }  } ; 
 #elif defined(__SSE3__)   
 #define UnaryOpSimdArray(name,unaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3) \
-void  name##_##SIMD##_##type(uint32_t length, type   *   in,type *   result); \
- \
-void  name##_##SIMD##_##type(uint32_t length, type  *   in, type *   result){ \        
+void  name##_##SIMD##_##type(uint32_t length, type   *   in,type *   result) ; \
+\
+void  name##_##SIMD##_##type(uint32_t length, type  *   in, type *   result){ \
   //  for pre sandybridge \
     uint32_t ix = 0 ;  \
     for(ix = 0; ix < length ; ix+=sizeAVX){ \
@@ -190,7 +190,7 @@ void  name##_##SIMD##_##type(uint32_t length, type  *   in, type *   result){ \
 #else  
 #define UnaryOpSimdArray(name,unaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3) \
 void  name##_##SIMD##_##type(uint32_t length, type   *   in,type *   result); \
- \
+\
 void  name##_##SIMD##_##type(uint32_t length, type  *   in, type *   result){ \
     //  scalar, sorry :) , for Old old intel x86, and for other architectures \
     uint32_t ix = 0 ; \
@@ -275,6 +275,9 @@ both clang and gcc support array indexing into simd vectors
 
 */
 
+
+double dotproduct_SIMD_double(uint32_t length, double  *   left,   double   *   right);
+
 double dotproduct_SIMD_double(uint32_t length, double  *   left,   double   *   right){
 #if defined(__FMA__) && defined(__AVX2__)
     // don't really need the avx2 assumption, but why not? :) 
@@ -322,6 +325,58 @@ fma(a,b,c,)== a *b + c
 #endif 
 }
 
+
+
+
+float dotproduct_SIMD_float(uint32_t length, float  *   left,   float   *   right);
+
+float dotproduct_SIMD_float(uint32_t length, float  *   left,   float   *   right){
+#if defined(__FMA__) && defined(__AVX2__)
+    // don't really need the avx2 assumption, but why not? :) 
+
+    for(int ix = 0 ; ix < length; ix += 8){
+        result =_mm256_fmadd_ps(_mm256_load_ps(left + ix),_mm256_load_ps(right+ix),result);
+        }
+    __m128 reduced1 = _mm_hadd_pd ((__m128){result[0],result[1],result[2],result[3]},
+                            (__m128){result[4],result[5],result[6],result[7]}) ; 
+    __m128 reduced2 = _mm_hadd_pd(reduced1, (__m128d){0.0, 0.0,0.0, 0.0})  ;
+    return  reduced2[0]+ reduced2[1];
+
+    /*
+since the intrinsics for FMA aren't sanely documented anywhere else, cribbing notes from 
+a number of sources, but basically
+fma(a,b,c,)== a *b + c 
+(same as the fma op in the c/c++ specs )
+    */
+
+#elif   defined(__AVX__)      
+    __m256d result = {0.0,0.0,0.0,0.0};
+    for(int ix = 0 ; ix < length; ix += 8){
+        result += _mm256_load_pd(left + ix)  + _mm256_loadu_pd(right+ix);
+        }
+    __m128 reduced1 = _mm_hadd_pd ((__m128){result[0],result[1],result[2],result[3]},
+                            (__m128){result[4],result[5],result[6],result[7]}) ; 
+    __m128 reduced2 = _mm_hadd_pd(reduced1, (__m128d){0.0, 0.0,0.0, 0.0})  ;
+    return  reduced2[0]+ reduced2[1];
+
+#elif defined(__SSE3__)   
+    __m128d result = {0.0,0.0};
+    for(int ix = 0 ; ix < length; ix += 4){
+        result += _mm128_loadu_pd(left + ix)  + _mm128_loadu_pd(right+ix);
+        }
+    __m128d reduced =  _mm_hadd_ps(result,result) ;   
+    return reduced[0]+reduced2[1];
+    
+
+#else
+    float result = 0.0 ; 
+    for(int ix = 0 ; ix< length ; ix ++ ){
+        result+= left[ix]* right[ix];
+        }
+    return result ; 
+
+#endif 
+}
 /*
 need to add DOT product, 
 should do scalar fallback, sse3, avx and FMA level versions
