@@ -144,7 +144,7 @@ int32_t leftStride ,type  *   right,int32_t rightStride, type *   result, \
 int resultStride  ); \
  \
 void name##_##type(uint32_t length, type  *   left,int32_t leftStride ,type  *   right,int32_t rightStride, type *   result, int32_t resultStride  ){ \
-    int32_t ix = 0 ;  \
+    uint32_t ix = 0 ;  \
     for (ix = 0; ix < length ; ix ++){ \
         result[ix* resultStride]= (left[ix*leftStride] ) binaryop (right[ix*rightStride]  ) ; \
         }  \
@@ -155,7 +155,7 @@ type *  out, int32_t outStride); \
  \
 void name##_##type(uint32_t length, type *  in,int32_t inStride, type *  out, \
 int32_t outStride){ \
-    int32_t ix = 0 ; \
+    uint32_t ix = 0 ; \
     for(ix = 0 ; ix < length ; ix ++){ \
         out[ix*outStride] = op(in[ix*inStride]); \
     } \
@@ -213,17 +213,17 @@ UnaryOpScalarArray(arraySqrt,sqrt,type)
 typedef float complex complex_float ;
 typedef double complex complex_double ;
 
-DotProductScalarArray(arrayGeneralDotProduct,realtimes,double,0.0) ;
-DotProductScalarArray(arrayGeneralDotProduct,realtimes,float,0.0) ;
+DotProductScalarArray(arrayGeneralDotProduct,realtimes,double,0.0) 
+DotProductScalarArray(arrayGeneralDotProduct,realtimes,float,0.0) 
 
 
-DotProductScalarArray(arrayGeneralDotProduct,complextimes,complex_double,0.0 + I*0.0) ;
-DotProductScalarArray(arrayGeneralDotProduct,complextimes,complex_float,0.0 + I*0.0) ;
+DotProductScalarArray(arrayGeneralDotProduct,complextimes,complex_double,0.0 + I*0.0) 
+DotProductScalarArray(arrayGeneralDotProduct,complextimes,complex_float,0.0 + I*0.0) 
 
-UnaryOpScalarArray(arrayGeneralAbs,fabs,float);
-UnaryOpScalarArray(arrayGeneralAbs,fabs,double);
+UnaryOpScalarArray(arrayGeneralAbs,fabs,float)
+UnaryOpScalarArray(arrayGeneralAbs,fabs,double)
 
-mkNumFracOpsScalar(complex_double);
-mkNumFracOpsScalar(complex_float);
-mkNumFracOpsScalar(double) ; 
-mkNumFracOpsScalar(float) ; 
+mkNumFracOpsScalar(complex_double)
+mkNumFracOpsScalar(complex_float)
+mkNumFracOpsScalar(double) 
+mkNumFracOpsScalar(float)  
