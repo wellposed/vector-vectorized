@@ -201,9 +201,9 @@ BinaryOpScalarArray(arrayPlus,+,type) \
 BinaryOpScalarArray(arrayMinus,-,type) \
 BinaryOpScalarArray(arrayTimes,*,type) \
 BinaryOpScalarArray(arrayDivide,/,type) \
-UnaryOpScalarArray( arrayNegate,negate,type) \
-UnaryOpScalarArray( arrayReciprocal,reciprocal,type) \
-UnaryOpScalarArray( arraySqrt,sqrt,type) 
+UnaryOpScalarArray(arrayNegate,negate,type) \
+UnaryOpScalarArray(arrayReciprocal,reciprocal,type) \
+UnaryOpScalarArray(arraySqrt,sqrt,type) 
 
 
 #define realtimes(x,y) (x * y ) 
