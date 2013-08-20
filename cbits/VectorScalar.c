@@ -162,7 +162,9 @@ void name##_##type(int32_t length, type *  in,int32_t inStride, type *  out, \
 int32_t outStride){ \
     int32_t ix = 0 ; \
     for(ix = 0 ; ix < length ; ix ++){ \
-        out[ix*outStride] = op(in[ix*inStride]); \
+        /*  WARNING / NOTE: in the complex float case, for reciprocal unary op, it does the divide using doubles,  then casts back to complex float, so may have  unexpectedly nice precision
+        */ \
+        out[ix*outStride] = (type) op(in[ix*inStride]); \
     } \
 }
 
@@ -232,3 +234,4 @@ mkNumFracOpsScalar(complex_double)
 mkNumFracOpsScalar(complex_float)
 mkNumFracOpsScalar(double) 
 mkNumFracOpsScalar(float)  
+
