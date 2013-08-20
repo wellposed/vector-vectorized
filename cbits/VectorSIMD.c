@@ -6,6 +6,11 @@
 #include <memory.h>
 #include <stddef.h>
 
+
+/*
+NB: use -Weverything -Wall to make sure the code is 
+*/
+
 /*
 for now i'm only going to do these operations for floats
 and doubles
@@ -129,7 +134,7 @@ void  name##_##SIMD##_##type(uint32_t length, type  *   left,type  *   right, ty
         simdtypeAVX rightV =simdloadAVX(right+ix ) ; \
         simdtypeAVX resV =  leftV binaryop rightV ; \
         simdstoreAVX(result+ix , resV); \
-        } ; \ 
+        } ; \
          };
 #elif defined(__SSE3__)   
 #define BinaryOpSimdArray(name,binaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3) \
@@ -176,7 +181,7 @@ void  name##_##SIMD##_##type(uint32_t length, type  *   in, type *   result){ \
         } ; \
       } ; 
 #elif defined(__SSE3__)   
-#define UnaryOpSimdArray(name,unaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3) \
+#define UnaryOpSimdArray(name,unaryopAvx,unaryopSSE3,unaryopScalar,,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3) \
 void  name##_##SIMD##_##type(uint32_t length, type   *   in,type *   result) ; \
 \
 void  name##_##SIMD##_##type(uint32_t length, type  *   in, type *   result){ \
@@ -184,7 +189,7 @@ void  name##_##SIMD##_##type(uint32_t length, type  *   in, type *   result){ \
     uint32_t ix = 0 ;  \
     for(ix = 0; ix < length ; ix+=sizeAVX){ \
         simdtypeSSE3 inV1 = simdloadSSE3(in + ix); \
-        simdtypeSSE3 resV1 = unaryop(inV1, broadSSE3,simdtypeSSE3) ; \
+        simdtypeSSE3 resV1 = unaryopSSE3(inV1, broadSSE3,simdtypeSSE3) ; \
         simdstoreSSE3(result+ix , resV1); \
         simdtypeSSE3 inV2 = simdloadSSE3(in + ix+sizeSSE3); \
         simdtypeSSE3 resV2 =  unaryop(inV2, broadSSE3,simdtypeSSE3) ; \
@@ -192,7 +197,7 @@ void  name##_##SIMD##_##type(uint32_t length, type  *   in, type *   result){ \
         } ;\
          } ; 
 #else  
-#define UnaryOpSimdArray(name,unaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3) \
+#define UnaryOpSimdArray(name,unaryopAvx,unaryopSSE3,unaryopScalar,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3) \
 void  name##_##SIMD##_##type(uint32_t length, type   *   in,type *   result); \
 \
 void  name##_##SIMD##_##type(uint32_t length, type  *   in, type *   result){ \
@@ -229,14 +234,23 @@ MOVDDUP: __m128d _mm_loaddup_pd(double const * dp)
 
 */
 
+#define sqrtDoubleAVX(numexp,nothing,boring)  _mm256_sqrt_pd((numexp))
+#define sqrtDoubleSSE3(numexp,nothing,boring)  _mm_sqrt_pd((numexp))
+#define sqrtDoubleScalar(numexp,nothing,boring)  sqrt((numexp))
 
-#define mkNumFracOpsSIMD(type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3)  \
+
+#define sqrtFloatAVX(numexp,nothing,boring)  _mm256_sqrt_ps((numexp))
+#define sqrtFloatSSE3(numexp,nothing,boring)  _mm_sqrt_ps((numexp))
+#define sqrtFloatScalar(numexp,nothing,boring)  sqrt((numexp))
+
+#define mkNumFracOpsSIMD(type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3,sqrtAVX,sqrtSSE3,sqrtScalar)  \
 BinaryOpSimdArray(arrayPlus,+ ,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3) ; \
 BinaryOpSimdArray(arrayMinus,-,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3) ; \
 BinaryOpSimdArray(arrayTimes,*,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3)  ; \
 BinaryOpSimdArray(arrayDivide,/,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3) ; \
-UnaryOpSimdArray(arrayNegate,negate,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3) ; \
-UnaryOpSimdArray(arrayReciprocal ,reciprocal,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3) ;
+UnaryOpSimdArray(arrayNegate,negate,negate,negate,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3) ; \
+UnaryOpSimdArray(arrayReciprocal ,reciprocal,reciprocal,reciprocal,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3) ; \
+UnaryOpSimdArray(arraySqrt,sqrtAVX,sqrtSSE3,sqrtScalar,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3);
  
 
 /* 
@@ -245,13 +259,13 @@ mkNumFracOpsSIMD(type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdload
 */
 
 // mkNumFracOpsSIMD(double,__m256d,_mm256_load_pd,_mm256_store_pd,__m128d,_mm128_load_pd,_mm128_store_pd,4,2,broadcastScalar,broadcast4Vect,broadcast2Vect);
-mkNumFracOpsSIMD(double,__m256d,_mm256_load_pd,_mm256_store_pd,__m128d,_mm_load_pd,_mm_store_pd,4,2,broadcastScalar,broadcast4Vect,broadcast2Vect);
+mkNumFracOpsSIMD(double,__m256d,_mm256_load_pd,_mm256_store_pd,__m128d,_mm_load_pd,_mm_store_pd,4,2,broadcastScalar,broadcast4Vect,broadcast2Vect,sqrtDoubleAVX,sqrtDoubleSSE3,sqrtDoubleScalar);
 
 
 // need to test these later 
 // mkNumFracOpsSIMD(float,__m256d,_mm256_load_ps,_mm256_store_ps,__m128d,_mm128_load_ps,_mm128_store_ps,8,4,broadcastScalar,broadcast8Vect,broadcast4Vect);
 // using unaligned for now to simplify associated engineering
-mkNumFracOpsSIMD(float,__m256,_mm256_load_ps,_mm256_store_ps,__m128,_mm_load_ps,_mm_store_ps,8,4,broadcastScalar,broadcast8Vect,broadcast4Vect);
+mkNumFracOpsSIMD(float,__m256,_mm256_load_ps,_mm256_store_ps,__m128,_mm_load_ps,_mm_store_ps,8,4,broadcastScalar,broadcast8Vect,broadcast4Vect,sqrtFloatAVX,sqrtFloatSSE3,sqrtFloatScalar);
 
 
 /* NOTE: I have not tested the FMA code
@@ -349,7 +363,7 @@ float dotproduct_SIMD_float(uint32_t length, float  *   left,   float   *   righ
         }
     __m128 reduced1 = _mm_hadd_ps ((__m128){result[0],result[1],result[2],result[3]},
                             (__m128){result[4],result[5],result[6],result[7]}) ;
-    __m128 reduced2 = _mm_hadd_ps(reduced1, (__m128d){0.0, 0.0,0.0, 0.0})  ;
+    __m128 reduced2 = _mm_hadd_ps(reduced1, (__m128){0.0, 0.0,0.0, 0.0})  ;
     return  reduced2[0]+ reduced2[1];
 
     /*
@@ -366,7 +380,7 @@ fma(a,b,c,)== a *b + c
         }
     __m128 reduced1 = _mm_hadd_ps ((__m128){result[0],result[1],result[2],result[3]},
                             (__m128){result[4],result[5],result[6],result[7]}) ;
-    __m128 reduced2 = _mm_hadd_ps(reduced1, (__m128d){0.0, 0.0,0.0, 0.0})  ;
+    __m128 reduced2 = _mm_hadd_ps(reduced1, (__m128){0.0, 0.0,0.0, 0.0})  ;
     return  reduced2[0]+ reduced2[1];
 
 #elif defined(__SSE3__)   
