@@ -8,7 +8,7 @@
 
 
 /*
-NB: use -Weverything -Wall to make sure the code is 
+NB: use  -Weverything -Wall -Wno-unused-macros to make sure the code is kosher
 */
 
 /*
@@ -135,7 +135,7 @@ void  name##_##SIMD##_##type(uint32_t length, type  *   left,type  *   right, ty
         simdtypeAVX resV =  leftV binaryop rightV ; \
         simdstoreAVX(result+ix , resV); \
         } ; \
-         };
+         }
 #elif defined(__SSE3__)   
 #define BinaryOpSimdArray(name,binaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3) \
 void  name##_##SIMD##_##type(uint32_t length, type  *   left, type   *   right,type *   result); \
@@ -152,7 +152,7 @@ void  name##_##SIMD##_##type(uint32_t length, type  *   left,type  *   right, ty
         simdtypeSSE3 resV2 =  leftV2 binaryop rightV2 ; \
         simdstoreSSE3(result+ix+sizeSSE3 , resV2); \
         } ; \
-    };
+    }
 #else
 #define BinaryOpSimdArray(name,binaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3) \
 void  name##_##SIMD##_##type(uint32_t length, type  *   left,   type   *   right,type *   result); \
@@ -163,25 +163,25 @@ void  name##_##SIMD##_##type(uint32_t length, type  *   left,type  *   right, ty
     for(ix = 0 ; ix < length ; ix+){ \
         result[ix] =(left[ix] ) binaryop (right[ix]  ) ;  \
     } ;\
-};
+}
 #endif 
 
 
 
 #ifdef  __AVX__    
-#define UnaryOpSimdArray(name,unaryop,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3) \
+#define UnaryOpSimdArray(name,unaryopAVX,unaryopSSE3,unaryopScalar,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3) \
 void  name##_##SIMD##_##type(uint32_t length, type   *   in,type *   result); \
 \
 void  name##_##SIMD##_##type(uint32_t length, type  *   in, type *   result){ \
     uint32_t ix = 0 ;  \
     for(ix = 0; ix < length ; ix+= sizeAVX){ \
         simdtypeAVX inV = simdloadAVX(in + ix) ; \
-        simdtypeAVX resV =   unaryop(inV, broadAVX,simdtypeAVX) ; \
+        simdtypeAVX resV =   unaryopAVX(inV, broadAVX,simdtypeAVX) ; \
         simdstoreAVX(result+ix , resV); \
         } ; \
-      } ; 
+      } 
 #elif defined(__SSE3__)   
-#define UnaryOpSimdArray(name,unaryopAvx,unaryopSSE3,unaryopScalar,,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3) \
+#define UnaryOpSimdArray(name,unaryopAVX,unaryopSSE3,unaryopScalar,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3) \
 void  name##_##SIMD##_##type(uint32_t length, type   *   in,type *   result) ; \
 \
 void  name##_##SIMD##_##type(uint32_t length, type  *   in, type *   result){ \
@@ -192,12 +192,12 @@ void  name##_##SIMD##_##type(uint32_t length, type  *   in, type *   result){ \
         simdtypeSSE3 resV1 = unaryopSSE3(inV1, broadSSE3,simdtypeSSE3) ; \
         simdstoreSSE3(result+ix , resV1); \
         simdtypeSSE3 inV2 = simdloadSSE3(in + ix+sizeSSE3); \
-        simdtypeSSE3 resV2 =  unaryop(inV2, broadSSE3,simdtypeSSE3) ; \
+        simdtypeSSE3 resV2 =  unaryopSSE3(inV2, broadSSE3,simdtypeSSE3) ; \
         simdstoreSSE3(result+ix+2 , resV2); \
         } ;\
-         } ; 
+         } 
 #else  
-#define UnaryOpSimdArray(name,unaryopAvx,unaryopSSE3,unaryopScalar,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3) \
+#define UnaryOpSimdArray(name,unaryopAVX,unaryopSSE3,unaryopScalar,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3) \
 void  name##_##SIMD##_##type(uint32_t length, type   *   in,type *   result); \
 \
 void  name##_##SIMD##_##type(uint32_t length, type  *   in, type *   result){ \
@@ -205,9 +205,9 @@ void  name##_##SIMD##_##type(uint32_t length, type  *   in, type *   result){ \
     uint32_t ix = 0 ; \
     for(ix = 0 ; ix < length ; ix ++){ \
         type inVal = (in[ix]) ; \
-        result[ix] = unaryop( inVal, broadScalar,type) ;  \
+        result[ix] = unaryopScalar( inVal, broadScalar,type) ;  \
     } ;\
-} ; 
+}  
 #endif 
 
 
@@ -225,7 +225,9 @@ note that 1 / v when v is a vector is casted to 1 being a replicated vector of 1
 #define broacastScalar(expr) expr 
 
 #define broadcast2Vect(expr) {(expr),(expr)}
+
 #define broadcast4Vect(expr) {(expr),(expr),(expr),(expr)}
+
 #define broadcast8Vect(expr) {(expr),(expr),(expr),(expr),(expr),(expr),(expr),(expr)}
 /*
 MOVDDUP: __m128d _mm_movedup_pd(__m128d a)
@@ -244,13 +246,13 @@ MOVDDUP: __m128d _mm_loaddup_pd(double const * dp)
 #define sqrtFloatScalar(numexp,nothing,boring)  sqrt((numexp))
 
 #define mkNumFracOpsSIMD(type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3,sqrtAVX,sqrtSSE3,sqrtScalar)  \
-BinaryOpSimdArray(arrayPlus,+ ,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3) ; \
-BinaryOpSimdArray(arrayMinus,-,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3) ; \
-BinaryOpSimdArray(arrayTimes,*,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3)  ; \
-BinaryOpSimdArray(arrayDivide,/,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3) ; \
-UnaryOpSimdArray(arrayNegate,negate,negate,negate,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3) ; \
-UnaryOpSimdArray(arrayReciprocal ,reciprocal,reciprocal,reciprocal,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3) ; \
-UnaryOpSimdArray(arraySqrt,sqrtAVX,sqrtSSE3,sqrtScalar,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3);
+BinaryOpSimdArray(arrayPlus,+ ,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3)  \
+BinaryOpSimdArray(arrayMinus,-,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3)  \
+BinaryOpSimdArray(arrayTimes,*,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3)   \
+BinaryOpSimdArray(arrayDivide,/,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3)  \
+UnaryOpSimdArray(arrayNegate,negate,negate,negate,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3) \
+UnaryOpSimdArray(arrayReciprocal ,reciprocal,reciprocal,reciprocal,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3)  \
+UnaryOpSimdArray(arraySqrt,sqrtAVX,sqrtSSE3,sqrtScalar,type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3)
  
 
 /* 
@@ -259,13 +261,15 @@ mkNumFracOpsSIMD(type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdload
 */
 
 // mkNumFracOpsSIMD(double,__m256d,_mm256_load_pd,_mm256_store_pd,__m128d,_mm128_load_pd,_mm128_store_pd,4,2,broadcastScalar,broadcast4Vect,broadcast2Vect);
-mkNumFracOpsSIMD(double,__m256d,_mm256_load_pd,_mm256_store_pd,__m128d,_mm_load_pd,_mm_store_pd,4,2,broadcastScalar,broadcast4Vect,broadcast2Vect,sqrtDoubleAVX,sqrtDoubleSSE3,sqrtDoubleScalar);
+
+mkNumFracOpsSIMD(double,__m256d,_mm256_load_pd,_mm256_store_pd,__m128d,_mm_load_pd,_mm_store_pd,4,2,broadcastScalar,broadcast4Vect,broadcast2Vect,sqrtDoubleAVX,sqrtDoubleSSE3,sqrtDoubleScalar)
 
 
 // need to test these later 
 // mkNumFracOpsSIMD(float,__m256d,_mm256_load_ps,_mm256_store_ps,__m128d,_mm128_load_ps,_mm128_store_ps,8,4,broadcastScalar,broadcast8Vect,broadcast4Vect);
 // using unaligned for now to simplify associated engineering
-mkNumFracOpsSIMD(float,__m256,_mm256_load_ps,_mm256_store_ps,__m128,_mm_load_ps,_mm_store_ps,8,4,broadcastScalar,broadcast8Vect,broadcast4Vect,sqrtFloatAVX,sqrtFloatSSE3,sqrtFloatScalar);
+
+mkNumFracOpsSIMD(float,__m256,_mm256_load_ps,_mm256_store_ps,__m128,_mm_load_ps,_mm_store_ps,8,4,broadcastScalar,broadcast8Vect,broadcast4Vect,sqrtFloatAVX,sqrtFloatSSE3,sqrtFloatScalar)
 
 
 /* NOTE: I have not tested the FMA code
@@ -306,7 +310,7 @@ double dotproduct_SIMD_double(uint32_t length, double  *   left,   double   *   
 #if defined(__FMA__) && defined(__AVX2__)
     // don't really need the avx2 assumption, but why not? :) 
 
-    for(int ix = 0 ; ix < length; ix += 4){
+    for(uint32_t ix = 0 ; ix < length; ix += 4){
         result =_mm256_fmadd_pd(_mm256_load_pd(left + ix),_mm256_load_pd(right+ix),result);
         }
     __m128d reduced1 = _mm_hadd_pd ((__m128d){result[0],result[1]},(__m128d){result[2],result[3]}) ; 
@@ -322,7 +326,7 @@ fma(a,b,c,)== a *b + c
 
 #elif   defined(__AVX__)      
     __m256d result = {0.0,0.0,0.0,0.0};
-    for(int ix = 0 ; ix < length; ix += 4){
+    for(uint32_t ix = 0 ; ix < length; ix += 4){
         result += _mm256_load_pd(left + ix)  * _mm256_load_pd(right+ix);
         }
 
@@ -332,20 +336,17 @@ fma(a,b,c,)== a *b + c
 
 #elif defined(__SSE3__)   
     __m128d result = {0.0,0.0};
-    for(int ix = 0 ; ix < length; ix += 2){
+    for(uint32_t ix = 0 ; ix < length; ix += 2){
         result += _mm_load_pd(left + ix)  * _mm_load_pd(right+ix);
         }
     __m128d reduced =  _mm_hadd_pd(result,result) ;   
     return reduced[0];
-    
-
 #else
     double result = 0.0 ; 
-    for(int ix = 0 ; ix< length ; ix ++ ){
+    for(uint32_t ix = 0 ; ix< length ; ix ++ ){
         result+= left[ix]* right[ix];
         }
     return result ; 
-
 #endif 
 }
 
@@ -358,12 +359,12 @@ float dotproduct_SIMD_float(uint32_t length, float  *   left,   float   *   righ
 #if defined(__FMA__) && defined(__AVX2__)
     // don't really need the avx2 assumption, but why not? :) 
 
-    for(int ix = 0 ; ix < length; ix += 8){
+    for(uint32_t ix = 0 ; ix < length; ix += 8){
         result =_mm256_fmadd_ps(_mm256_load_ps(left + ix),_mm256_load_ps(right+ix),result);
         }
     __m128 reduced1 = _mm_hadd_ps ((__m128){result[0],result[1],result[2],result[3]},
                             (__m128){result[4],result[5],result[6],result[7]}) ;
-    __m128 reduced2 = _mm_hadd_ps(reduced1, (__m128){0.0, 0.0,0.0, 0.0})  ;
+    __m128 reduced2 = _mm_hadd_ps(reduced1, (__m128){0.0, 0.0,0.0, 0.0,0.0,0.0,0.0,0.0})  ;
     return  reduced2[0]+ reduced2[1];
 
     /*
@@ -374,8 +375,8 @@ fma(a,b,c,)== a *b + c
     */
 
 #elif   defined(__AVX__)      
-    __m256d result = {0.0,0.0,0.0,0.0};
-    for(int ix = 0 ; ix < length; ix += 8){
+    __m256 result = {0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0};
+    for(uint32_t ix = 0 ; ix < length; ix += 8){
         result += _mm256_load_ps(left + ix)  * _mm256_load_ps(right+ix);
         }
     __m128 reduced1 = _mm_hadd_ps ((__m128){result[0],result[1],result[2],result[3]},
@@ -384,17 +385,17 @@ fma(a,b,c,)== a *b + c
     return  reduced2[0]+ reduced2[1];
 
 #elif defined(__SSE3__)   
-    __m128d result = {0.0,0.0};
-    for(int ix = 0 ; ix < length; ix += 4){
+    __m128 result = {0.0,0.0};
+    for(uint32_t ix = 0 ; ix < length; ix += 4){
         result += _mm_load_ps(left + ix)  * _mm_load_ps(right+ix);
         }
-    __m128d reduced =  _mm_hadd_ps(result,result) ;   
+    __m128 reduced =  _mm_hadd_ps(result,result) ;   
     return reduced[0]+reduced[1];
     
 
 #else
     float result = 0.0 ; 
-    for(int ix = 0 ; ix< length ; ix ++ ){
+    for(uint32_t ix = 0 ; ix< length ; ix ++ ){
         result+= left[ix]* right[ix];
         }
     return result ; 
