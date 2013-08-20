@@ -309,7 +309,7 @@ fma(a,b,c,)== a *b + c
 #elif   defined(__AVX__)      
     __m256d result = {0.0,0.0,0.0,0.0};
     for(int ix = 0 ; ix < length; ix += 4){
-        result += _mm256_load_pd(left + ix)  + _mm256_load_pd(right+ix);
+        result += _mm256_load_pd(left + ix)  * _mm256_load_pd(right+ix);
         }
 
     __m128d reduced1 = _mm_hadd_pd ((__m128d){result[0],result[1]},(__m128d){result[2],result[3]}) ; 
@@ -319,7 +319,7 @@ fma(a,b,c,)== a *b + c
 #elif defined(__SSE3__)   
     __m128d result = {0.0,0.0};
     for(int ix = 0 ; ix < length; ix += 2){
-        result += _mm_load_pd(left + ix)  + _mm_load_pd(right+ix);
+        result += _mm_load_pd(left + ix)  * _mm_load_pd(right+ix);
         }
     __m128d reduced =  _mm_hadd_pd(result,result) ;   
     return reduced[0];
@@ -362,7 +362,7 @@ fma(a,b,c,)== a *b + c
 #elif   defined(__AVX__)      
     __m256d result = {0.0,0.0,0.0,0.0};
     for(int ix = 0 ; ix < length; ix += 8){
-        result += _mm256_load_ps(left + ix)  + _mm256_load_ps(right+ix);
+        result += _mm256_load_ps(left + ix)  * _mm256_load_ps(right+ix);
         }
     __m128 reduced1 = _mm_hadd_ps ((__m128){result[0],result[1],result[2],result[3]},
                             (__m128){result[4],result[5],result[6],result[7]}) ;
@@ -372,7 +372,7 @@ fma(a,b,c,)== a *b + c
 #elif defined(__SSE3__)   
     __m128d result = {0.0,0.0};
     for(int ix = 0 ; ix < length; ix += 4){
-        result += _mm_load_ps(left + ix)  + _mm_load_ps(right+ix);
+        result += _mm_load_ps(left + ix)  * _mm_load_ps(right+ix);
         }
     __m128d reduced =  _mm_hadd_ps(result,result) ;   
     return reduced[0]+reduced[1];
