@@ -3,6 +3,11 @@
 // #include <complex.h>
 #include <stdint.h>
 
+
+/*
+note: using 32bit signed 
+*/
+
 /*
 we have 3 versions: 
 avx2(untested)
@@ -139,34 +144,34 @@ trunc()
 
 
 
-#define BinaryOpScalarArray(name,binaryop,type) void  name##_##type(uint32_t length, type  *   left, \
+#define BinaryOpScalarArray(name,binaryop,type) void  name##_##type(int32_t length, type  *   left, \
 int32_t leftStride ,type  *   right,int32_t rightStride, type *   result, \
 int resultStride  ); \
  \
-void name##_##type(uint32_t length, type  *   left,int32_t leftStride ,type  *   right,int32_t rightStride, type *   result, int32_t resultStride  ){ \
-    uint32_t ix = 0 ;  \
+void name##_##type(int32_t length, type  *   left,int32_t leftStride ,type  *   right,int32_t rightStride, type *   result, int32_t resultStride  ){ \
+    int32_t ix = 0 ;  \
     for (ix = 0; ix < length ; ix ++){ \
         result[ix* resultStride]= (left[ix*leftStride] ) binaryop (right[ix*rightStride]  ) ; \
         }  \
 }
 
-#define UnaryOpScalarArray(name,op,type) void name##_##type(uint32_t length, type *  in,int32_t inStride,\
+#define UnaryOpScalarArray(name,op,type) void name##_##type(int32_t length, type *  in,int32_t inStride,\
 type *  out, int32_t outStride); \
  \
-void name##_##type(uint32_t length, type *  in,int32_t inStride, type *  out, \
+void name##_##type(int32_t length, type *  in,int32_t inStride, type *  out, \
 int32_t outStride){ \
-    uint32_t ix = 0 ; \
+    int32_t ix = 0 ; \
     for(ix = 0 ; ix < length ; ix ++){ \
         out[ix*outStride] = op(in[ix*inStride]); \
     } \
 }
 
-#define DotProductScalarArray(name,binaryop, type,init) type name##_##type(uint32_t length, type  *   left, \
+#define DotProductScalarArray(name,binaryop, type,init) type name##_##type(int32_t length, type  *   left, \
 int32_t leftStride ,type  *   right,int32_t rightStride); \
  \
- type name##_##type(uint32_t length, type  *   left, int32_t leftStride ,type  *   right,int32_t rightStride){ \
+ type name##_##type(int32_t length, type  *   left, int32_t leftStride ,type  *   right,int32_t rightStride){ \
     type res = init ; \
-    uint32_t ix = 0; \
+    int32_t ix = 0; \
     for(ix=0 ; ix < length ; ix++ ){ \
         res +=  binaryop((left[ix*leftStride] ),(right[ix*rightStride]  )) ; \
         } \
