@@ -310,12 +310,14 @@ double dotproduct_SIMD_double(uint32_t length, double  *   left,   double   *   
 #if defined(__FMA__) && defined(__AVX2__)
     // don't really need the avx2 assumption, but why not? :) 
 
+
+    __m256d result = {0.0,0.0,0.0,0.0};
+
     for(uint32_t ix = 0 ; ix < length; ix += 4){
         result =_mm256_fmadd_pd(_mm256_load_pd(left + ix),_mm256_load_pd(right+ix),result);
         }
-    __m128d reduced1 = _mm_hadd_pd ((__m128d){result[0],result[1]},(__m128d){result[2],result[3]}) ; 
-    __m128d reduced2 = _mm_hadd_pd(reduced1, (__m128d){0.0, 0.0})  ;
-    return  reduced2[0];
+    __m256d reduced1 =_mm256_hadd_pd(result,result) ;   
+    return  reduced1[0] + reduced1[2];
 
     /*
 since the intrinsics for FMA aren't sanely documented anywhere else, cribbing notes from 
@@ -330,9 +332,8 @@ fma(a,b,c,)== a *b + c
         result += _mm256_load_pd(left + ix)  * _mm256_load_pd(right+ix);
         }
 
-    __m128d reduced1 = _mm_hadd_pd ((__m128d){result[0],result[1]},(__m128d){result[2],result[3]}) ; 
-    __m128d reduced2 = _mm_hadd_pd(reduced1, (__m128d){0.0, 0.0})  ;
-    return  reduced2[0];
+    __m256d reduced1 =_mm256_hadd_pd(result,result) ;   
+    return  reduced1[0] + reduced1[2];
 
 #elif defined(__SSE3__)   
     __m128d result = {0.0,0.0};
