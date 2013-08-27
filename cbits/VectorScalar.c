@@ -220,12 +220,36 @@ UnaryOpScalarArray(arraySqrt,sqrt,type)
 typedef float complex complex_float ;
 typedef double complex complex_double ;
 
-DotProductScalarArray(arrayGeneralDotProduct,realtimes,double,0.0) 
-DotProductScalarArray(arrayGeneralDotProduct,realtimes,float,0.0) 
+DotProductScalarArray(arrayDotProduct,realtimes,double,0.0) 
+DotProductScalarArray(arrayDotProduct,realtimes,float,0.0) 
+
+// name mangling the complex dot products because I need to 
+//  wrap them to take a singlen array pointer where I write the result
+// because haskell currently doesn't have an FFI story for structs and complex numbers
+DotProductScalarArray(arrayDotProduct_internal,complextimes,complex_double,0.0 + I*0.0) 
+DotProductScalarArray(arrayDotProduct_internal,complextimes,complex_float,0.0 + I*0.0) 
 
 
-DotProductScalarArray(arrayGeneralDotProduct,complextimes,complex_double,0.0 + I*0.0) 
-DotProductScalarArray(arrayGeneralDotProduct,complextimes,complex_float,0.0 + I*0.0) 
+/// NOTE: complex valued dot products have a different type than the real float dot products
+/// this is important to remember!
+
+void arrayDotProduct_complex_double(int32_t length, complex_double  *   left, int32_t leftStride ,complex_double  *   right,int32_t rightStride, complex_double * resultSingleton);
+
+void arrayDotProduct_complex_double(int32_t length, complex_double  *   left, int32_t leftStride ,complex_double  *   right,int32_t rightStride, complex_double * resultSingleton){
+    complex_double result = arrayDotProduct_internal_complex_double(length,left,leftStride,right,rightStride);
+    resultSingleton[0] = result ; 
+}
+
+
+void arrayDotProduct_complex_float(int32_t length, complex_float  *   left, int32_t leftStride ,complex_float  *   right,int32_t rightStride, complex_float * resultSingleton);
+
+void arrayDotProduct_complex_float(int32_t length, complex_float  *   left, int32_t leftStride ,complex_float  *   right,int32_t rightStride, complex_float * resultSingleton){
+    complex_float result = arrayDotProduct_internal_complex_double(length,left,leftStride,right,rightStride);
+    resultSingleton[0] = result ; 
+}
+
+
+
 
 UnaryOpScalarArray(arrayGeneralAbs,fabs,float)
 UnaryOpScalarArray(arrayGeneralAbs,fabs,double)
