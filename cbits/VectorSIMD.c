@@ -1,10 +1,11 @@
-// #include "simd.h"
+#include "simd.h"
 #include <tgmath.h>
-#include <stdint.h>
 
-#include <immintrin.h>
-#include <memory.h>
-#include <stddef.h>
+
+// #include <stdint.h>
+// #include <immintrin.h>
+// #include <memory.h>
+// #include <stddef.h>
 
 
 /*

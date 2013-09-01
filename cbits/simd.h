@@ -1,6 +1,7 @@
 #include <immintrin.h>
 #include <memory.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #if __STDC_VERSION__ >= 199901L
   /* yay, C99 or newer!*/
