@@ -17,7 +17,7 @@ main :: IO ()
 #if x86_64_HOST_ARCH
 main = 
     do 
-        putStrLn "Please have a recent clang or gcc installed or the build will fail"
+        --putStrLn "Please have a recent clang or gcc installed or the build will fail"
         defaultMainWithHooks myhook 
 #else   
 main = error "only x86_64 architectures are currently supported" 

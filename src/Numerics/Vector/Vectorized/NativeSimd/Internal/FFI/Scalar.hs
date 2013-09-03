@@ -1,5 +1,5 @@
 
-module Numerics.Vector.Vectorized.NativeSimd.FFI.Scalar where
+module Numerics.Vector.Vectorized.NativeSimd.Internal.FFI.Scalar where
 
 import Foreign hiding (unsafePerformIO)
 import Foreign.C.Types
@@ -9,7 +9,7 @@ import Prelude hiding (replicate)
 --import System.IO.Unsafe
 --import Data.Vector.Storable.Mutable  
 import GHC.Ptr (castPtr)
-
+import  Data.Complex 
 
 ------
 --- Double  operations

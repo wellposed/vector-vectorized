@@ -1,5 +1,5 @@
  
-module Numerics.Vector.Vectorized.NativeSimd.FFI.Simd where
+module Numerics.Vector.Vectorized.NativeSimd.Internal.FFI.Simd where
 
 import Foreign hiding (unsafePerformIO)
 import Foreign.C.Types
