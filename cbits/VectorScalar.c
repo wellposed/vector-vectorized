@@ -227,7 +227,7 @@ DotProductScalarArray(arrayDotProduct,realtimes,float,0.0)
 //  wrap them to take a singlen array pointer where I write the result
 // because haskell currently doesn't have an FFI story for structs and complex numbers
 DotProductScalarArray(arrayDotProduct_internal,complextimes,complex_double,0.0 + I*0.0) 
-DotProductScalarArray(arrayDotProduct_internal,complextimes,complex_float,0.0 + I*0.0) 
+DotProductScalarArray(arrayDotProduct_internal,complextimes,complex_float,0.0f + I*0.0f) 
 
 
 /// NOTE: complex valued dot products have a different type than the real float dot products
@@ -244,7 +244,7 @@ void arrayDotProduct_complex_double(int32_t length, complex_double  *   left, in
 void arrayDotProduct_complex_float(int32_t length, complex_float  *   left, int32_t leftStride ,complex_float  *   right,int32_t rightStride, complex_float * resultSingleton);
 
 void arrayDotProduct_complex_float(int32_t length, complex_float  *   left, int32_t leftStride ,complex_float  *   right,int32_t rightStride, complex_float * resultSingleton){
-    complex_float result = arrayDotProduct_internal_complex_double(length,left,leftStride,right,rightStride);
+    complex_float result = arrayDotProduct_internal_complex_float(length,left,leftStride,right,rightStride);
     resultSingleton[0] = result ; 
 }
 
