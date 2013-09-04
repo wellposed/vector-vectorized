@@ -261,16 +261,46 @@ UnaryOpSimdArray(arraySqrt,sqrtAVX,sqrtSSE3,sqrtScalar,type,simdtypeAVX,simdload
 mkNumFracOpsSIMD(type,simdtypeAVX,simdloadAVX,simdstoreAVX,simdtypeSSE3,simdloadSSE3,simdstoreSSE3,sizeAVX, sizeSSE3,broadScalar,broadAVX,broadSSE3)
 */
 
-// mkNumFracOpsSIMD(double,__m256d,_mm256_load_pd,_mm256_store_pd,__m128d,_mm128_load_pd,_mm128_store_pd,4,2,broadcastScalar,broadcast4Vect,broadcast2Vect);
 
-mkNumFracOpsSIMD(double,__m256d,_mm256_load_pd,_mm256_store_pd,__m128d,_mm_load_pd,_mm_store_pd,4,2,broadcastScalar,broadcast4Vect,broadcast2Vect,sqrtDoubleAVX,sqrtDoubleSSE3,sqrtDoubleScalar)
+/*
+Why am I using the unaligned version of the loads and stores?
+
+because on any vaguely recent hardware, sandybridge or newer (and some that are older)
+the cost of doing a sequence of unaligned loads and stores should (devilish word that) be amortized away
+(need to measure this), 
+
+Consider a region of memory, formed by 4 cache lines a,b,c,d
+
+the first read will load straddle a and b, the next b,c, the next c,d
+so each subsequent read will already have its "front" cacheline loaded,
+so much of the read cost is diminished from the worst case.
 
 
-// need to test these later 
-// mkNumFracOpsSIMD(float,__m256d,_mm256_load_ps,_mm256_store_ps,__m128d,_mm128_load_ps,_mm128_store_ps,8,4,broadcastScalar,broadcast8Vect,broadcast4Vect);
-// using unaligned for now to simplify associated engineering
+*/
 
-mkNumFracOpsSIMD(float,__m256,_mm256_load_ps,_mm256_store_ps,__m128,_mm_load_ps,_mm_store_ps,8,4,broadcastScalar,broadcast8Vect,broadcast4Vect,sqrtFloatAVX,sqrtFloatSSE3,sqrtFloatScalar)
+
+/* 
+aligned mkNumFracOpsSIMD(double,__m256d,_mm256_load_pd,_mm256_store_pd,__m128d,_mm128_load_pd,_mm128_store_pd,4,2,broadcastScalar,broadcast4Vect,broadcast2Vect);
+*/
+
+/*
+this is the unaligned version
+mkNumFracOpsSIMD(double,__m256d,_mm256_loadu_pd,_mm256_storeu_pd,__m128d,_mm_loadu_pd,_mm_storeu_pd,4,2,broadcastScalar,broadcast4Vect,broadcast2Vect);
+
+*/
+
+
+
+mkNumFracOpsSIMD(double,__m256d,_mm256_loadu_pd,_mm256_storeu_pd,__m128d,_mm_loadu_pd,_mm_storeu_pd,4,2,broadcastScalar,broadcast4Vect,broadcast2Vect,sqrtDoubleAVX,sqrtDoubleSSE3,sqrtDoubleScalar)
+
+
+/*
+need to test these later 
+mkNumFracOpsSIMD(float,__m256d,_mm256_load_ps,_mm256_store_ps,__m128d,_mm128_load_ps,_mm128_store_ps,8,4,broadcastScalar,broadcast8Vect,broadcast4Vect);
+using unaligned for now to simplify associated engineering
+*/
+
+mkNumFracOpsSIMD(float,__m256,_mm256_loadu_ps,_mm256_storeu_ps,__m128,_mm_loadu_ps,_mm_storeu_ps,8,4,broadcastScalar,broadcast8Vect,broadcast4Vect,sqrtFloatAVX,sqrtFloatSSE3,sqrtFloatScalar)
 
 
 /* NOTE: I have not tested the FMA code
